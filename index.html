@@ -4,14 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.0.2">
+<meta name="app-version" content="1.0.3">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
-  var KEY="app-code-v1", PEND="app-boot-pending";
+  var KEY="app-code-v1", PEND="app-boot-pending", HIST="app-code-hist-v1";
   window.__useStored=false;
+  function fallback(){   // drop the copy that failed and go back to the one before it (or to the built-in app)
+    try{
+      localStorage.removeItem(PEND);
+      var h=JSON.parse(localStorage.getItem(HIST)||"[]");
+      if(h.length){ var p=h.pop(); localStorage.setItem(HIST,JSON.stringify(h)); localStorage.setItem(KEY,JSON.stringify(p)); }
+      else localStorage.removeItem(KEY);
+    }catch(e){ try{ localStorage.removeItem(KEY); }catch(_){} }
+  }
   if(window.__codeLoaded){   // this is the downloaded copy, running after the swap
-    setTimeout(function(){ if(!window.__appOk){ try{ localStorage.removeItem(KEY); localStorage.removeItem(PEND); }catch(e){} location.reload(); } },8000);   // it did not start: go back to the built-in app
+    setTimeout(function(){ if(!window.__appOk){ fallback(); location.reload(); } },8000);   // it did not start: go back
     return;
   }
   function num(v){ return String(v).split(".").map(function(n){ return parseInt(n,10)||0; }); }
@@ -20,7 +28,8 @@
     var o=JSON.parse(localStorage.getItem(KEY)||"null");
     var m=document.querySelector('meta[name="app-version"]'), builtIn=m?m.content:"0";
     if(o && typeof o.html==="string" && o.html.length>1000){
-      if(localStorage.getItem(PEND)==="1" || !newer(o.version,builtIn)){ localStorage.removeItem(KEY); localStorage.removeItem(PEND); return; }   // last start failed, or the built-in app is already newer
+      if(localStorage.getItem(PEND)==="1"){ fallback(); location.reload(); return; }   // the last start did not finish
+      if(!newer(o.version,builtIn)){ localStorage.removeItem(KEY); localStorage.removeItem(HIST); localStorage.removeItem(PEND); return; }   // the built-in app is already newer
       localStorage.setItem(PEND,"1"); window.__useStored=true;
       document.addEventListener("DOMContentLoaded",function(){ window.__codeLoaded=true; document.open(); document.write(o.html); document.close(); });
     }
@@ -75,6 +84,11 @@ tr.today td{color:var(--accent)}
 .upstatus.ok{color:var(--accent)}
 .upstatus.err{color:var(--warn)}
 .muted{color:var(--muted);font-size:.9rem}
+.modal{display:none;position:fixed;inset:0;background:rgba(8,16,15,.88);z-index:30;align-items:center;justify-content:center;padding:20px}
+.modalbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:420px;width:100%;max-height:80vh;overflow:auto}
+.modalbox h2{font-size:1.2rem;font-weight:normal;color:var(--accent);margin:0 0 12px}
+.modalbox ul{margin:0 0 16px;padding-left:20px;line-height:1.5}
+.modalbox button{width:100%}
 .row input[type=url]{flex:1;min-width:0;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:.9rem}
 .row input[type=url]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .row{display:flex;justify-content:space-between;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);font-size:1.05rem}
@@ -160,7 +174,7 @@ tr.today .hj{color:var(--accent)}
       <button class="tab upl" id="appCheck" type="button" style="margin-top:12px"><span>Check for updates now</span></button>
       <button class="tab upl" id="appRestart" type="button" style="display:none"><span>Restart to apply update</span></button>
       <p class="upstatus" id="appStatus"></p>
-      <button class="tab upl" id="appRestore" type="button" style="display:none"><span>Restore original app</span></button>
+      <button class="tab upl" id="appRestore" type="button" style="display:none"><span>Restore previous update</span></button>
     </div>
     <div id="setLoc" style="display:none">
       <button class="opt" type="button" data-city="Ankara">Ankara</button>
@@ -168,6 +182,9 @@ tr.today .hj{color:var(--accent)}
     </div>
   </div>
 </div>
+
+<div id="restarting" class="modal"><div class="modalbox"><p id="restartMsg" style="margin:0;text-align:center"></p></div></div>
+<div id="news" class="modal"><div class="modalbox"><h2 id="newsTitle"></h2><ul id="newsList"></ul><button id="newsOk" type="button">OK</button></div></div>
 
 <script>
 (function(){ if(window.__useStored) return;   // a downloaded copy of the app is taking over
@@ -451,6 +468,7 @@ function goSettings(v){ if(!(v in SET_DEPTH)) return; history.pushState({n:"sett
 function closeSettingsAll(){ if(document.getElementById("settings").style.display==="block") history.go(-(SET_DEPTH[setView]||1)); }
 window.addEventListener("popstate",e=>{
   const st=e.state||{n:"home"}, calEl=document.getElementById("cal"), setEl=document.getElementById("settings");
+  document.getElementById("news").style.display = st.n==="news" ? "flex" : "none";
   if(st.n==="settings"){ calEl.style.display="none"; setEl.style.display="block"; showSettings(st.v||"menu"); }
   else if(st.n==="cal"){ setEl.style.display="none"; calEl.style.display="block"; }
   else { calEl.style.display="none"; setEl.style.display="none"; }
@@ -463,11 +481,12 @@ document.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{ se
 
 // ---- App Update: download a newer copy of this whole app ----
 const APP_VERSION = (document.querySelector('meta[name="app-version"]')||{}).content || "0";
-const APPUP_KEY="app-update-v1", CODE_KEY="app-code-v1";
-let APPUP=Object.assign({url:"",auto:true,last:0,msg:""},(function(){ try{ return JSON.parse(localStorage.getItem(APPUP_KEY))||{}; }catch(e){ return {}; } })());
+const APPUP_KEY="app-update-v1", CODE_KEY="app-code-v1", HIST_KEY="app-code-hist-v1";
+let APPUP=Object.assign({url:"",auto:true,last:0,msg:"",skip:null},(function(){ try{ return JSON.parse(localStorage.getItem(APPUP_KEY))||{}; }catch(e){ return {}; } })());
 function saveAppUp(){ try{ localStorage.setItem(APPUP_KEY,JSON.stringify(APPUP)); }catch(e){} }
 function verNums(v){ return String(v).split(".").map(n=>parseInt(n,10)||0); }
 function newerVer(a,b){ const x=verNums(a), y=verNums(b); for(let i=0;i<Math.max(x.length,y.length);i++){ if((x[i]||0)!==(y[i]||0)) return (x[i]||0)>(y[i]||0); } return false; }
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); }catch(e){ return []; } }
 function storedCode(){ try{ return JSON.parse(localStorage.getItem(CODE_KEY)||"null"); }catch(e){ return null; } }
 function setAppStatus(t,cls){ const e=document.getElementById("appStatus"); e.textContent=t; e.className="upstatus"+(cls?" "+cls:""); }
 function appLine(){ return APPUP.msg ? APPUP.msg+(APPUP.last?" Last checked: "+new Date(APPUP.last).toLocaleString("en-US",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+".":"") : ""; }
@@ -484,6 +503,7 @@ async function checkAppUpdate(manual){
   if(!url){ if(manual) setAppStatus("Enter the update address first.","err"); return; }
   if(!/^https:\/\//i.test(url)){ if(manual) setAppStatus("The address must start with https://","err"); return; }
   if(manual) setAppStatus("Checking…");
+  let installedVer=null;
   const show=(t,c)=>{ if(manual || document.getElementById("setApp").style.display==="block") setAppStatus(t,c); };
   try{
     const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),20000);
@@ -494,14 +514,20 @@ async function checkAppUpdate(manual){
     const m=html.match(/<meta name="app-version" content="([^"]+)"/);
     if(!m || !/<\/html>\s*$/i.test(html) || html.indexOf("__codeLoaded")<0 || html.indexOf('id="settings"')<0) throw new Error("That address does not hold a valid version of this app.");
     const ver=m[1], sc=storedCode();
+    if(!manual && APPUP.skip===ver){ APPUP.last=Date.now(); saveAppUp(); return; }   // a version the user rolled back from is not installed again automatically
     APPUP.last=Date.now();
     if(!newerVer(ver,APP_VERSION)){ APPUP.msg="You have the latest version ("+APP_VERSION+")."; }
     else if(sc && !newerVer(ver,sc.version)){ APPUP.msg="Version "+sc.version+" is already downloaded. Restart the app to apply it."; }
     else{
-      try{ localStorage.setItem(CODE_KEY,JSON.stringify({version:ver,html:html,fetched:Date.now()})); }catch(e){ throw new Error("The update could not be saved on this device."); }
+      const entry={version:ver,html:html,fetched:Date.now()};
+      let hist=loadHist(); if(sc){ hist.push(sc); hist=hist.slice(-3); }   // keep the copy we are replacing so it can be restored
+      try{ localStorage.setItem(HIST_KEY,JSON.stringify(hist)); localStorage.setItem(CODE_KEY,JSON.stringify(entry)); }
+      catch(e){ try{ localStorage.removeItem(HIST_KEY); localStorage.setItem(CODE_KEY,JSON.stringify(entry)); }catch(e2){ throw new Error("The update could not be saved on this device."); } }
+      APPUP.skip=null; installedVer=ver;
       APPUP.msg="Version "+ver+" downloaded. Restart the app to apply it.";
     }
     saveAppUp(); syncAppUI(); show(appLine(),"ok");
+    if(installedVer && manual) restartApp("Installing version "+installedVer+"…");
   }catch(err){
     const msg = err.name==="AbortError" ? "The server took too long to answer." : (err instanceof TypeError ? "Could not reach the address. Check the internet connection and the address." : (err.message||"The update failed."));
     APPUP.msg="Last check failed: "+msg; saveAppUp(); show(APPUP.msg,"err");
@@ -511,15 +537,54 @@ function maybeAutoAppCheck(){ if(APPUP.auto && APPUP.url && Date.now()-APPUP.las
 document.getElementById("appUrl").addEventListener("change",e=>{ APPUP.url=e.target.value.trim(); APPUP.msg=""; APPUP.last=0; saveAppUp(); setAppStatus(""); });
 document.getElementById("appAuto").addEventListener("change",e=>{ APPUP.auto=e.target.checked; saveAppUp(); });
 document.getElementById("appCheck").addEventListener("click",()=>{ APPUP.url=document.getElementById("appUrl").value.trim(); saveAppUp(); checkAppUpdate(true); });
-document.getElementById("appRestart").addEventListener("click",()=>{ location.reload(); });
-document.getElementById("appRestore").addEventListener("click",()=>{ try{ localStorage.removeItem(CODE_KEY); localStorage.removeItem("app-boot-pending"); }catch(e){} location.reload(); });
+document.getElementById("appRestart").addEventListener("click",()=>{ restartApp("Installing the update…"); });
+document.getElementById("appRestore").addEventListener("click",()=>{ restorePrevious(); });
+
+// Restart: the page is closed and reopened, so the new version starts from the beginning
+function restartApp(msg){
+  document.getElementById("restartMsg").textContent=msg;
+  document.getElementById("restarting").style.display="flex";
+  const st=history.state, d = st && st.n==="settings" ? (SET_DEPTH[st.v]||1) : (st && (st.n==="cal"||st.n==="news") ? 1 : 0);
+  if(d) history.go(-d);   // leave the history clean so Back works normally after the restart
+  setTimeout(()=>location.reload(),1500);
+}
+// Restore previous update: go back one downloaded version (or to the built-in app when there is none)
+function restorePrevious(){
+  try{
+    localStorage.removeItem("app-boot-pending");
+    const h=loadHist();
+    if(h.length){ const prev=h.pop(); localStorage.setItem(HIST_KEY,JSON.stringify(h)); localStorage.setItem(CODE_KEY,JSON.stringify(prev)); }
+    else localStorage.removeItem(CODE_KEY);
+    APPUP.skip=APP_VERSION; saveAppUp();
+  }catch(e){ try{ localStorage.removeItem(CODE_KEY); }catch(_){} }
+  restartApp("Restoring the previous version…");
+}
+
+// What’s new: shown once, the first time a newer version starts
+const WHATS_NEW=[
+  "“Restore original app” is now “Restore previous update” and goes back one update at a time.",
+  "When an update is installed, the app now restarts by itself.",
+  "This window appears after every update to show what changed."
+];
+function maybeShowWhatsNew(){
+  let last=null;
+  try{ last=localStorage.getItem("last-seen-version"); localStorage.setItem("last-seen-version",APP_VERSION); }catch(e){}
+  if(!WHATS_NEW.length) return;
+  if((last && newerVer(APP_VERSION,last)) || (!last && window.__codeLoaded)){
+    document.getElementById("newsTitle").textContent="What’s new in version "+APP_VERSION;
+    document.getElementById("newsList").innerHTML=WHATS_NEW.map(t=>"<li>"+t.replace(/&/g,"&amp;").replace(/</g,"&lt;")+"</li>").join("");
+    document.getElementById("news").style.display="flex";
+    history.pushState({n:"news"},"");
+  }
+}
+document.getElementById("newsOk").addEventListener("click",()=>{ history.back(); });
 
 // ---- Daily update: runs every second, switches to the new day's times at midnight ----
 let lastDay = iso(new Date());
 setInterval(()=>{ const k=iso(new Date()); if(k!==lastDay){ lastDay=k; render(); setupNotification(); maybeAutoAppCheck(); } else { tick(); checkAlerts(); } },1000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ render(); maybeAutoAppCheck(); } });
 
-render(); setupNotification(); maybeAutoAppCheck();
+render(); setupNotification(); maybeAutoAppCheck(); maybeShowWhatsNew();
 window.__appOk=true; try{ localStorage.removeItem("app-boot-pending"); }catch(e){}   // the app started correctly
 })();
 </script>
