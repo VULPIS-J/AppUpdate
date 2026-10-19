@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.0.8">
+<meta name="app-version" content="1.0.10">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
   try{ var th=localStorage.getItem("theme-v1"); if(th==="dark"||th==="light") document.documentElement.setAttribute("data-theme",th); }catch(e){}   // saved Appearance choice, applied before the first paint
+  try{ var co=localStorage.getItem("color-v1"); if(co&&co!=="blue") document.documentElement.setAttribute("data-color",co); }catch(e){}
   var KEY="app-code-v1", PEND="app-boot-pending", HIST="app-code-hist-v1";
   window.__useStored=false;
   function fallback(){   // drop the copy that failed and go back to the one before it (or to the built-in app)
@@ -39,11 +40,11 @@
 </script>
 <style>
 @font-face{font-family:"PrayerTitle";font-style:italic;font-weight:400 700;src:url(data:font/woff;base64,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) format("woff")}
-:root{--bg:#10201f;--panel:#172b29;--line:#2b4542;--text:#eef2ea;--muted:#9bb0aa;--accent:#e8c872;--warn:#f0a38a;color-scheme:dark}
+:root{--bg:#101c2e;--panel:#17283f;--line:#2b4466;--text:#eaf0f8;--muted:#9aaec8;--accent:#e8c872;--warn:#f0a38a;color-scheme:dark}
 /* Light theme: chosen in Settings > Appearance, or automatically when Default is selected and the device is in light mode */
-:root[data-theme="light"]{--bg:#f3f7f3;--panel:#ffffff;--line:#d3ded5;--text:#16231f;--muted:#566b63;--accent:#009a4c;--warn:#b4452a;color-scheme:light}
+:root[data-theme="light"]{--bg:#f2f6fb;--panel:#ffffff;--line:#d3dde9;--text:#161f2e;--muted:#566a82;--accent:#1565c0;--warn:#b4452a;color-scheme:light}
 @media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){--bg:#f3f7f3;--panel:#ffffff;--line:#d3ded5;--text:#16231f;--muted:#566b63;--accent:#009a4c;--warn:#b4452a;color-scheme:light}
+  :root:not([data-theme="dark"]){--bg:#f2f6fb;--panel:#ffffff;--line:#d3dde9;--text:#161f2e;--muted:#566a82;--accent:#1565c0;--warn:#b4452a;color-scheme:light}
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif}
@@ -79,9 +80,9 @@ th:first-child,td:first-child{text-align:left;padding-left:4px;white-space:nowra
 tr.today td{color:var(--accent)}
 .setwrap{max-width:520px;margin:0 auto}
 .sethead{color:var(--muted);margin:18px 0 10px;font-size:.9rem}
-.opt,.topt{display:flex;width:100%;justify-content:space-between;padding:14px 16px;border-radius:12px;margin-bottom:8px;font-size:1.05rem}
-.opt.on,.topt.on{border-color:var(--accent);color:var(--accent)}
-.opt.on::after,.topt.on::after{content:"\2713"}
+.opt,.topt,.copt{display:flex;width:100%;justify-content:space-between;padding:14px 16px;border-radius:12px;margin-bottom:8px;font-size:1.05rem}
+.opt.on,.topt.on,.copt.on{border-color:var(--accent);color:var(--accent)}
+.opt.on::after,.topt.on::after,.copt.on::after{content:"\2713"}
 .tab{display:flex;justify-content:space-between;align-items:center;width:100%;padding:16px;border-radius:12px;margin-bottom:8px;font-size:1.05rem}
 .tab::after{content:"\203A";font-size:1.4rem;line-height:1;color:var(--muted)}
 .upl{cursor:pointer;border:1px solid var(--line);color:var(--text)}
@@ -90,7 +91,7 @@ tr.today td{color:var(--accent)}
 .upstatus.ok{color:var(--accent)}
 .upstatus.err{color:var(--warn)}
 .muted{color:var(--muted);font-size:.9rem}
-.modal{display:none;position:fixed;inset:0;background:rgba(8,16,15,.88);z-index:30;align-items:center;justify-content:center;padding:20px}
+.modal{display:none;position:fixed;inset:0;background:rgba(8,14,24,.88);z-index:30;align-items:center;justify-content:center;padding:20px}
 .modalbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:420px;width:100%;max-height:80vh;overflow:auto}
 .modalbox h2{font-size:1.2rem;font-weight:normal;color:var(--accent);margin:0 0 12px}
 .modalbox ul{margin:0 0 16px;padding-left:20px;line-height:1.5}
@@ -117,9 +118,28 @@ input[type=checkbox]:checked::after{transform:translateX(20px);background:var(--
 #nBody.off{opacity:.4;pointer-events:none}
 .hj{display:block;font-size:.65rem;color:var(--muted)}
 tr.today .hj{color:var(--accent)}
+#splash{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .45s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash span{color:var(--accent);font-size:2.4rem;font-weight:700;letter-spacing:.35em;margin-right:-.35em;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+/* Accent color: chosen in Settings > Appearance (Blue is the default, with no data-color attribute) */
+:root[data-color="green"]{--bg:#0f201a;--panel:#162b23;--line:#2a4538;--text:#ecf3ee;--muted:#9bb3a6;--accent:#7fd6a0}
+:root[data-color="green"][data-theme="light"]{--bg:#f2f7f3;--panel:#ffffff;--line:#d3e0d6;--text:#16231b;--muted:#566b5e;--accent:#1b7f4b}
+@media (prefers-color-scheme:light){:root[data-color="green"]:not([data-theme="dark"]){--bg:#f2f7f3;--panel:#ffffff;--line:#d3e0d6;--text:#16231b;--muted:#566b5e;--accent:#1b7f4b}}
+:root[data-color="red"]{--bg:#231314;--panel:#301b1c;--line:#4f2e30;--text:#f5eceb;--muted:#bb9d9b;--accent:#f2938f}
+:root[data-color="red"][data-theme="light"]{--bg:#fbf3f2;--panel:#ffffff;--line:#e8d6d4;--text:#2a1716;--muted:#7a5a58;--accent:#c62828}
+@media (prefers-color-scheme:light){:root[data-color="red"]:not([data-theme="dark"]){--bg:#fbf3f2;--panel:#ffffff;--line:#e8d6d4;--text:#2a1716;--muted:#7a5a58;--accent:#c62828}}
+:root[data-color="golden"]{--bg:#221c0f;--panel:#2d2616;--line:#4d4228;--text:#f6f1e4;--muted:#bcae8a;--accent:#e8c872}
+:root[data-color="golden"][data-theme="light"]{--bg:#fbf8ef;--panel:#ffffff;--line:#e8e0c8;--text:#2a2410;--muted:#7a6c40;--accent:#b8860b}
+@media (prefers-color-scheme:light){:root[data-color="golden"]:not([data-theme="dark"]){--bg:#fbf8ef;--panel:#ffffff;--line:#e8e0c8;--text:#2a2410;--muted:#7a6c40;--accent:#b8860b}}
+:root[data-color="purple"]{--bg:#1a1426;--panel:#251c36;--line:#3e3158;--text:#f0ecf7;--muted:#aa9ec4;--accent:#c4a3f5}
+:root[data-color="purple"][data-theme="light"]{--bg:#f6f3fb;--panel:#ffffff;--line:#ddd6ea;--text:#1f1830;--muted:#6a5d86;--accent:#6a3fb5}
+@media (prefers-color-scheme:light){:root[data-color="purple"]:not([data-theme="dark"]){--bg:#f6f3fb;--panel:#ffffff;--line:#ddd6ea;--text:#1f1830;--muted:#6a5d86;--accent:#6a3fb5}}
+.copt .sw{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:10px;vertical-align:-1px}
 </style>
 </head>
 <body>
+<div id="splash"><span>VJAPPS</span></div>
+<script>setTimeout(function(){var e=document.getElementById("splash");if(!e)return;e.classList.add("hide");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e);},500);},3000);</script>
 <div id="homeView">
   <div class="top"><div class="brand">Home</div><div class="btns"><button id="homeSettingsBtn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
   <button class="tab" id="homePrayer" type="button">Prayer times</button>
@@ -185,6 +205,12 @@ tr.today .hj{color:var(--accent)}
       <button class="topt" type="button" data-theme="light">Light</button>
       <button class="topt" type="button" data-theme="default">Default</button>
       <p class="note" style="margin-top:10px">Default follows your device’s theme.</p>
+      <p class="note" style="margin:18px 4px 8px">Color</p>
+      <button class="copt" type="button" data-color="blue"><span><span class="sw" style="background:#1565c0"></span>Blue</span></button>
+      <button class="copt" type="button" data-color="green"><span><span class="sw" style="background:#1b7f4b"></span>Green</span></button>
+      <button class="copt" type="button" data-color="red"><span><span class="sw" style="background:#c62828"></span>Red</span></button>
+      <button class="copt" type="button" data-color="golden"><span><span class="sw" style="background:#b8860b"></span>Golden</span></button>
+      <button class="copt" type="button" data-color="purple"><span><span class="sw" style="background:#6a3fb5"></span>Purple</span></button>
     </div>
     <div id="setApp" style="display:none">
       <p class="note" style="margin:0 4px 14px">Download a newer version of the app itself from a web address. It is used the next time the app starts.</p>
@@ -468,6 +494,14 @@ function markTheme(){ document.querySelectorAll(".topt").forEach(b=>b.classList.
 function setTheme(v){ THEME=v; try{ localStorage.setItem(THEME_KEY,v); }catch(e){} applyTheme(); markTheme(); }
 document.querySelectorAll(".topt").forEach(b=>b.addEventListener("click",()=>setTheme(b.dataset.theme)));
 applyTheme();
+// ---- Appearance: accent color ----
+const COLOR_KEY="color-v1", COLORS=["blue","green","red","golden","purple"];
+let COLOR="blue"; try{ const c=localStorage.getItem(COLOR_KEY); if(COLORS.includes(c)) COLOR=c; }catch(e){}
+function applyColor(){ const r=document.documentElement; if(COLOR==="blue") r.removeAttribute("data-color"); else r.setAttribute("data-color",COLOR); }
+function markColor(){ document.querySelectorAll(".copt").forEach(b=>b.classList.toggle("on", b.dataset.color===COLOR)); }
+function setColor(v){ COLOR=v; try{ localStorage.setItem(COLOR_KEY,v); }catch(e){} applyColor(); markColor(); }
+document.querySelectorAll(".copt").forEach(b=>b.addEventListener("click",()=>setColor(b.dataset.color)));
+applyColor(); markColor();
 
 // ---- Settings: choose the city ----
 function markCity(){ document.querySelectorAll(".opt").forEach(b=>b.classList.toggle("on", b.dataset.city===CITY)); }
@@ -495,7 +529,7 @@ function showSettings(v){
   if(v==="notif") syncNotifUI();
   if(v==="prayer") syncPrayerUI();
   if(v==="app") syncAppUI();
-  if(v==="appearance") markTheme();
+  if(v==="appearance"){ markTheme(); markColor(); }
   if(v==="loc") markCity();
 }
 // Back button: every screen that opens is a history entry, so Back closes one screen at a time (and only leaves the app from the main screen)
@@ -611,7 +645,7 @@ function restorePrevious(){
 
 // What’s new: shown once, the first time a newer version starts
 const WHATS_NEW=[
-  "Updated and corrected times"
+  "New Themes"
 ];
 function maybeShowWhatsNew(){
   let last=null;
