@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.0.3">
+<meta name="app-version" content="1.0.4">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
+  try{ var th=localStorage.getItem("theme-v1"); if(th==="dark"||th==="light") document.documentElement.setAttribute("data-theme",th); }catch(e){}   // saved Appearance choice, applied before the first paint
   var KEY="app-code-v1", PEND="app-boot-pending", HIST="app-code-hist-v1";
   window.__useStored=false;
   function fallback(){   // drop the copy that failed and go back to the one before it (or to the built-in app)
@@ -38,7 +39,12 @@
 </script>
 <style>
 @font-face{font-family:"PrayerTitle";font-style:italic;font-weight:400 700;src:url(data:font/woff;base64,d09GRgABAAAAAA+oABMAAAAAFJwAAwIMAAAAAAAAAAAAAAAAAAAAAAAAAABHREVGAAAJGAAAADwAAABNNF43G0dQT1MAAAlUAAABGQAAAkLLkC40R1NVQgAACnAAAAAvAAAAMCN+JIxIVkFSAAAKoAAAADwAAABNlDN4vk9TLzIAAAb4AAAASQAAAGBjclGUU1RBVAAACtwAAABUAAAAbuiY1aRjbWFwAAAHRAAAAFIAAAB0Ac4CdWZ2YXIAAAswAAAAOgAAAESJ+2mSZ2FzcAAACRAAAAAIAAAACAAAABBnbHlmAAABqAAABIMAAAYSZlpLWGd2YXIAAAtsAAAEPAAABPAfROx5aGVhZAAABmgAAAA2AAAANiac3HxoaGVhAAAG1AAAACIAAAAkCHoFGGhtdHgAAAagAAAANAAAADQXOgEebG9jYQAABkwAAAAcAAAAHAm9CyxtYXhwAAAGLAAAAB0AAAAgAB8By25hbWUAAAegAAABWAAAAsRManAxcG9zdAAACPgAAAAVAAAAIP+cADJwcmVwAAAHmAAAAAcAAAAHaAaMhXicXZTNj9NGGIdnxontrDdx4s8kdmzHH2NvPpxsHNv7RXZZaNWFLf1gF1i2Ahap0IpqK0ACVKT2Qiu1t/4P/QN66glx77UcOFXqrdeillNV0rE3wIpDnJlJpPd5n987BggsAIC20BPggQQAOFIUWaogx7Z9hqaZCUoZJyVPMUlSsk+TRLXJN6Mo0YgcJSGCCwffbBhnHt0s1udYWEBVw+TRc4QNGqqIQoInUPEXiWmwqCzqwvLBGoWa8Vn0pH9xw9/dCuGPml+GCMJ+G5mpA3+WPJ5sexD6WuT+TVY7K4NTCyKAwCWkD9Bj0CKcjJNgzDBUzhjNGBmbJiv0oIiREI9324SmomsV9Cdqt+aQeXN9qejV0OOnq+d8CP/7IysMUa+NrNSG/8KdvaekAPCmL5ALp8AHS7kPtULJUtZtSlaOjeNxkjqz1QSpdgXlP0+oGGO4ZbxnsXyZpZXaAq9TohUagc0xVD2KhnKy5W4ddvqnerLuaekQK3wApyV27f6t3boU9GJaGITGKGid9s7shfyHV979+iB1R7ufpxvnk/3b9xKazvj86Qv4C+FrgeBNXow0C0TNspuR5W7iMYZNdyNYunxj0Bj5rdVEaesb2+HVy8baJ4Nw1SzE1yYOnCqj7sKaXy9OdjrNuCOOT1v3D1YOL0b25HrCuMvY6k2ngCG1U/QMYUBQyGf+A4JwdJobA+Iox3lLWE7hkHD8CfVtp8NVOb6a+SmIRlcPe/P8PFerdogvwezB6fLAeP/SXkdSiBF5sasPw975jz7ulq2ZIVKRnb6grpGKhwAUXxcgFfKoVAePsyP/rRNih4T0GiQi6rIRj8j85BaPL+k3HaDfB22uwrGSpCehI0G4Azmeg1Bo6XHo5nuqxDBsAc4dNZGF3rY4BOcKlLV+QgsGElui2icnWhCK1VpJqGX/kqyQG4X69oVLwbwujy/duh3xjTLDsfizw+tmLTh2UuufXV/ddERO0GYK2rGpL8v711xv3NADvH/Vdled9O5BS9C7CVMb9o08F/L4lVgaAxC9EoDi5JiAN/2TnklUPj7y9SlETN4SI79uqW8gWCpSrfWTlhE0ZKGJ9HiQ+cgIB+fWT26acxKeAU7GSty6eMUzNcFQJHq4d3hnkefLGZVBpuUrQjUBQLVxdp2Oyh+9UrIc/RBlsLMoZlcuCzOPRVENlCX0JDgTNgRJLhTZoZYkeMVsxe3euQif6tYFQSkUi76tdHQVK+52NNjlGkNb0ZpVpsoq9VFf63iCgMOWd8Kr9wy5Ua+yPFtTJacuWnpFHqx1O5sYwOk/L/+CvxHad8hsz2AzUIW8bkKKTBgxqDL4aG4ImBrlo+jTM+xX48RU0Ibd0ct9RM/RyqDbZkt105MZRRLFgkUVJWzaXa0kuhqD9LFdogtlVlBagmnz+IQ92r/w8jlymqo6pgrQjhbLKw8f3o1qLkJLYUFbi9vuuBE9+n518d7DpIFZilKrioJXrM0fvptcvhMR68voBvgJPQPc7I7O+L5UDUtRTAs9M5sN02w0zf8BioDtsgB4nGNgZGBg4GV0ZmBnaGNgYwDxEICFgREAFHIA7AAAAAAAAAAAVQCIANgBFgEhAVoB7QI4Ao8C8wLzAwkAAQAAAAMCDFufV9FfDzz1AAMD6AAAAADhjRO9AAAAAOGfgtf/gv7kBNMEFQACAAYAAgAAAAAAAAH3AB0CVQApAnwAJAIkACUB3QAnAUQABwFEAAcDbAAIAccABwGsAB4CAv/0AQcAAAAAADl4nGNgZGBgfvfvHQMDy8//TX9tWC4zv2AwYUAGvADP3AiZAAB4nGNgYfJlnMDAysDA1MUU8f8PgzeIZhBijGMwYtRhQAWMyBznyCBXhkYGBYZK5nf/3jEwsGxjVIOpYfzCtAdIKTAwAwCOiA2vAAAAeJxjYGBgYmBgYAZiESDJCKZZGBLAtABQhIVBgSGAIYQhkSGVIZMhl6GYofL/f6AsqmgRSPT/6/8b/6/7v+j//P9z/s/6P+3/RLB5GAAAgtYaNAAAuAH/hbAEjQB4nG2QzUrDQBSFz+2fFYp05cKFhK4UolbdiK5aURBUREUR3NQa0khiJGmVbnwOn8RHcOUT+ACuXIprTyY3JpYyTObMmTPfvRkATbyhDKnMAvjiTLWgzl2qS2jgW3UZtmSZCubFVl3FgnRV1+hfp5rZhkSqJedIifln1WUsyovqhPmquoo5eVddI+dD9Qya8qm6jrr8YBchHjBGBA8uBhjCwgbaWOewcE7H4XrIVIQe1QnXEHd0+ybbwYjrwJzH3C8ZxpDMGNtY43BJThIj3GCVt0IEdPumpkOmz9Mx8w7drM4K+0p78jk8ppdhk/6kLAunzMecER75vaWzz7v3pqdjEgLTd+uP2GLtTB8w1VPuJv02xxZ2WPOK3D2qvI9iNn+Fonthuoipk/pWgTidcsl89tZHpnePbxNMUM94ElB1yfDN/xVPp7vJm7hk+XSif+xJmq6/pc9n8XicY2BmYPj/F4jnMBgxYAEAYRYDzQAAAAABAAH//wAPeJxjYGRgZhBiQAAlBiYwZGVgZOBg4AKSjEBRHjApBuE5ACEDL5APZH/68vXHr99//v1nYmFlBwB1LAnfeJyFUbFKA0EUnNnb3OWiphQLv0HyARYiwcrSwtbCSkkRLFKFFFZWVlZWVqksxErEytpS8gUiaFBEbBSec4/TcHDiLju8mTf7dvctCKCFFawidDc2t9De3znoYQlROswEP1Hh5N5uv4dmEfmKCGJBFdbF2uhKDVhERyxoZXLQPqUmNuU9or3zBrm2XhQOm/AagZ1iH9e4rVq5n/bCS9QMe2C/Tq94njicMV7Vet44+LfOZFZH/sM/7lPR7Y5HduvnHmOZJ/bM00r+kWf2wbG9cvyrfZXxAs/L+9e/fVq+JfhsKMrU9+idzsXpOXUaqdRMnMoXf5CU/qiZ+u/lIy/lGBwbjvOOqWPi2HSkY8txzjFzjCN8A1ksR38AAAB4nGNgZGBg4GLQYdBjYHZx8wlhEEmuLMphkMtJLMljkGNgAcoy/P/PAAcArlkHTgB4nGNgZAABESC2ZYABkBgPmBQDkkDaAQgZuCEyPxkYmVh4hESU1fUZmBl4ODlYmRjY2ZlZ2LgYAVtlAv14nGNgZGBk4GBgYmBgEGFgBZIqDEzl6RkljEBmZkliDiNInotBikGNwYjBjoEZKMzEyMo4AUjtAbJByhgY2Ri/wNnsTBFwNgdUDZAHNocBAPKzB/V4nGNgZGBgEGBgYmBkEGFgYeAoT88oYZzAwADCTHuAckAJRkYIn5EJiL8AMTNQLgJIs0DUAADb6QZ8AAB4nEWUyXPbZBjGv0/etHmV5TVe5Dhe4jpNUuosdGjaIdPSgQPDsNy4cOUGV8Zyyp3/gb+hB84cKTMUk6ETgy0bx3bqJZYl2dpi8TnugDTzzXzvfHqe5/3plQAEAECwWneBG6yu/dv1IfgK/AjqoAEJ+B38CVrYh+j+8gRUIcDBN+jE4dHu7t52Ppk6/OLJewfHx0dH7xwe7e3q5mhimJpmGDczTafLh48fHRwc7ZW2NglRFCUrATb5KgOXYlsYzNS5oig75Uwmw3FpnuLSlHrzsi40m60W77fa7ZnNHgqHQiEvZiwXw/bZ2v0Rck8F/Mp8PDbSxWI+ny2Uspn+VaszHF4ms2xI0wDNVz2iOLpstzvllT4y4EkuTS5u2p32lSg+v1X6FikdL00Lp0jc6XQSqtTtmIauzSVjPB53W+2+qJm6JsuyemOpRCJXLBY5D6H2X7+q/z0CkOd9S5NJRjy0p1QqcVEv7cBquAzFX1+8+EOyaiECd9kg6HSmFpgR5XI5G7KLg27n7Nb9c+S+vXSSOI57Y5mtrXzKDZXrIYaZps2JPGVFg+5kPl/A+73LEdB4PmAiYKphGiC8vb2dCPgJU0egZEyVNSAIE1ckHqWXC2Gt70L6VawJgvz3t/tP0L4Y5tLpNLeVy+W4kB8sI5EgjZnSfD6XZ9PpVDQhwxomRjLoKd6ny7oiYfHUujkvaa/5aMYO7cZgdH5+3uqLsrFckxRWMyOPer3eP81Go9HsXWtEcGNlxcnSbDabDLqXvaFm88dRo8hd11RV1VRFnM7QCMwxVzQOsF0IoV2zaI+XDbNugqId0GazUQGf68YwLSdN075gMMji2HRC4HZLBRhCQvqZALnoXQn1ev2voemNxJx8wFMo7qScbzoDVGwMVJJhLZ71BENRjlX+/OX11aD/X/4a7k/FNt9/+rRI1XCStJji6WmOqPmW8sAIpcJR1Hsm6qOd2PP19H2NOq0sVoOranNZmc8VyYbHNqANwzCH6vH5WZbxU5iOoddqStf9N4orzCHc+Tyw89UgChHLbSzbgqTM/s/gioQT6EycrHnnk97FxYXQFS4lRziRstZ8ayu+JGYsFgsbzay4bqbjXgcia7hoXURpFNOJB2KxmM9hog9tOhmKDnckmUwGQ4WtJKozNAABno/bcCKwKpMkRYUTiYTflPvNRnckLhS9trHU5GtBEMaKIkvjVqvVl3SLpKDN6cId8C2BH1ZZ3r1bKBTuP3zy8UcfnJ5Uynk0vazH5/MGIj7XtQy86WLhzv69nf0HJw8P015/IBoMxlMRkiSj6dxepVJxnTx79tmnp+AuX00sXd5IPo8kSqU72bDbY1eng7bQ6fYw6MaxM9ZBELH9B5XKPab36ueXv/2OuAkDpUaYc5mKR5hsFL79M2ygZNRm+bByv5gM4AQVP6OyWYaECAgkmewZ+Bc7rfhc) format("woff")}
-:root{--bg:#10201f;--panel:#172b29;--line:#2b4542;--text:#eef2ea;--muted:#9bb0aa;--accent:#e8c872;--warn:#f0a38a}
+:root{--bg:#10201f;--panel:#172b29;--line:#2b4542;--text:#eef2ea;--muted:#9bb0aa;--accent:#e8c872;--warn:#f0a38a;color-scheme:dark}
+/* Light theme: chosen in Settings > Appearance, or automatically when Default is selected and the device is in light mode */
+:root[data-theme="light"]{--bg:#f3f7f3;--panel:#ffffff;--line:#d3ded5;--text:#16231f;--muted:#566b63;--accent:#009a4c;--warn:#b4452a;color-scheme:light}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){--bg:#f3f7f3;--panel:#ffffff;--line:#d3ded5;--text:#16231f;--muted:#566b63;--accent:#009a4c;--warn:#b4452a;color-scheme:light}
+}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:Georgia,"Times New Roman",serif}
 body{min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 20px) 18px calc(env(safe-area-inset-bottom,0px) + 20px);max-width:520px;margin:0 auto}
@@ -73,9 +79,9 @@ th:first-child,td:first-child{text-align:left;padding-left:4px;white-space:nowra
 tr.today td{color:var(--accent)}
 .setwrap{max-width:520px;margin:0 auto}
 .sethead{color:var(--muted);margin:18px 0 10px;font-size:.9rem}
-.opt{display:flex;width:100%;justify-content:space-between;padding:14px 16px;border-radius:12px;margin-bottom:8px;font-size:1.05rem}
-.opt.on{border-color:var(--accent);color:var(--accent)}
-.opt.on::after{content:"\2713"}
+.opt,.topt{display:flex;width:100%;justify-content:space-between;padding:14px 16px;border-radius:12px;margin-bottom:8px;font-size:1.05rem}
+.opt.on,.topt.on{border-color:var(--accent);color:var(--accent)}
+.opt.on::after,.topt.on::after{content:"\2713"}
 .tab{display:flex;justify-content:space-between;align-items:center;width:100%;padding:16px;border-radius:12px;margin-bottom:8px;font-size:1.05rem}
 .tab::after{content:"\203A";font-size:1.4rem;line-height:1;color:var(--muted)}
 .upl{cursor:pointer;border:1px solid var(--line);color:var(--text)}
@@ -136,6 +142,7 @@ tr.today .hj{color:var(--accent)}
   <div class="calhead"><div class="title" id="setTitle">Settings</div><button id="setClose" type="button">Close</button></div>
   <div class="setwrap">
     <div id="setMenu">
+      <button class="tab" type="button" data-view="appearance">Appearance</button>
       <button class="tab" type="button" data-view="notif">Notifications</button>
       <button class="tab" type="button" data-view="loc">Location</button>
       <button class="tab" type="button" data-view="app">App Update</button>
@@ -164,6 +171,12 @@ tr.today .hj{color:var(--accent)}
         <div class="row"><span>Alert sound</span><span class="sel"><select id="pSound"><option value="default">Default (phone)</option><option value="silent">Silent</option><option value="chime">Chime</option><option value="bell">Bell</option><option value="crystal">Crystal</option><option value="marimba">Marimba</option><option value="harp">Harp</option><option value="droplet">Droplet</option><option value="calm">Calm</option><option value="rise">Rise</option><option value="softping">Soft ping</option><option value="glow">Glow</option><option value="gentle">Gentle</option><option value="morning">Morning</option></select><button id="pPlay" type="button" aria-label="Play sound">&#9654;</button></span></div>
         <div class="row"><span>Reminder before</span><select id="pBefore"><option value="">Same as general</option><option value="0">Off</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></select></div>
       </div>
+    </div>
+    <div id="setAppearance" style="display:none">
+      <button class="topt" type="button" data-theme="dark">Dark</button>
+      <button class="topt" type="button" data-theme="light">Light</button>
+      <button class="topt" type="button" data-theme="default">Default</button>
+      <p class="note" style="margin-top:10px">Default follows your device’s theme.</p>
     </div>
     <div id="setApp" style="display:none">
       <p class="note" style="margin:0 4px 14px">Download a newer version of the app itself from a web address. It is used the next time the app starts.</p>
@@ -436,6 +449,18 @@ document.getElementById("close").addEventListener("click",()=>{ history.back(); 
 document.getElementById("prev").addEventListener("click",()=>{ if(calIdx>MIN_M){ calIdx--; drawCal(); } });
 document.getElementById("next").addEventListener("click",()=>{ if(calIdx<MAX_M){ calIdx++; drawCal(); } });
 
+// ---- Appearance: dark, light, or follow the device ----
+const THEME_KEY="theme-v1";
+let THEME="default"; try{ const t=localStorage.getItem(THEME_KEY); if(t==="dark"||t==="light") THEME=t; }catch(e){}
+function applyTheme(){
+  const r=document.documentElement; if(!r) return;
+  if(THEME==="dark"||THEME==="light") r.setAttribute("data-theme",THEME); else r.removeAttribute("data-theme");
+}
+function markTheme(){ document.querySelectorAll(".topt").forEach(b=>b.classList.toggle("on", b.dataset.theme===THEME)); }
+function setTheme(v){ THEME=v; try{ localStorage.setItem(THEME_KEY,v); }catch(e){} applyTheme(); markTheme(); }
+document.querySelectorAll(".topt").forEach(b=>b.addEventListener("click",()=>setTheme(b.dataset.theme)));
+applyTheme();
+
 // ---- Settings: choose the city ----
 function markCity(){ document.querySelectorAll(".opt").forEach(b=>b.classList.toggle("on", b.dataset.city===CITY)); }
 function setCity(c){
@@ -455,15 +480,17 @@ function showSettings(v){
   document.getElementById("setLoc").style.display = v==="loc" ? "block" : "none";
   document.getElementById("setPrayer").style.display = v==="prayer" ? "block" : "none";
   document.getElementById("setApp").style.display = v==="app" ? "block" : "none";
-  document.getElementById("setTitle").textContent = v==="notif" ? "Notifications" : v==="loc" ? "Location" : v==="prayer" ? NAMES[curPrayer] : v==="app" ? "App Update" : "Settings";
+  document.getElementById("setAppearance").style.display = v==="appearance" ? "block" : "none";
+  document.getElementById("setTitle").textContent = v==="notif" ? "Notifications" : v==="loc" ? "Location" : v==="prayer" ? NAMES[curPrayer] : v==="app" ? "App Update" : v==="appearance" ? "Appearance" : "Settings";
   document.getElementById("setClose").textContent = v==="menu" ? "Close" : "Back";
   if(v==="notif") syncNotifUI();
   if(v==="prayer") syncPrayerUI();
   if(v==="app") syncAppUI();
+  if(v==="appearance") markTheme();
   if(v==="loc") markCity();
 }
 // Back button: every screen that opens is a history entry, so Back closes one screen at a time (and only leaves the app from the main screen)
-const SET_DEPTH={menu:1,notif:2,loc:2,app:2,prayer:3};
+const SET_DEPTH={menu:1,appearance:2,notif:2,loc:2,app:2,prayer:3};
 function goSettings(v){ if(!(v in SET_DEPTH)) return; history.pushState({n:"settings",v:v},""); showSettings(v); }
 function closeSettingsAll(){ if(document.getElementById("settings").style.display==="block") history.go(-(SET_DEPTH[setView]||1)); }
 window.addEventListener("popstate",e=>{
@@ -562,9 +589,9 @@ function restorePrevious(){
 
 // What’s new: shown once, the first time a newer version starts
 const WHATS_NEW=[
-  "“Restore original app” is now “Restore previous update” and goes back one update at a time.",
-  "When an update is installed, the app now restarts by itself.",
-  "This window appears after every update to show what changed."
+  "New Appearance setting at the top of Settings: Dark, Light or Default.",
+  "Default follows your device’s theme.",
+  "In Light mode the gold text turns green."
 ];
 function maybeShowWhatsNew(){
   let last=null;
