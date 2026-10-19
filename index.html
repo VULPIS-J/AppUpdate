@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.0.5">
+<meta name="app-version" content="1.0.6">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -121,6 +121,7 @@ tr.today .hj{color:var(--accent)}
 </head>
 <body>
 <div id="homeView">
+  <div class="top" style="justify-content:flex-end"><div class="btns"><button id="homeSettingsBtn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
   <button class="tab" id="homePrayer" type="button">Prayer times</button>
 </div>
 <div id="prayerView" style="display:none">
@@ -147,9 +148,11 @@ tr.today .hj{color:var(--accent)}
   <div class="calhead"><div class="title" id="setTitle">Settings</div><button id="setClose" type="button">Close</button></div>
   <div class="setwrap">
     <div id="setMenu">
-      <button class="tab" type="button" data-view="appearance">Appearance</button>
       <button class="tab" type="button" data-view="notif">Notifications</button>
       <button class="tab" type="button" data-view="loc">Location</button>
+    </div>
+    <div id="setMenuHome" style="display:none">
+      <button class="tab" type="button" data-view="appearance">Appearance</button>
       <button class="tab" type="button" data-view="app">App Update</button>
     </div>
     <div id="setNotif" style="display:none">
@@ -481,6 +484,7 @@ function showSettings(v){
   if(!(v in SET_DEPTH)) v="menu";
   setView=v;
   document.getElementById("setMenu").style.display = v==="menu" ? "block" : "none";
+  document.getElementById("setMenuHome").style.display = v==="homemenu" ? "block" : "none";
   document.getElementById("setNotif").style.display = v==="notif" ? "block" : "none";
   document.getElementById("setLoc").style.display = v==="loc" ? "block" : "none";
   document.getElementById("setPrayer").style.display = v==="prayer" ? "block" : "none";
@@ -495,14 +499,15 @@ function showSettings(v){
   if(v==="loc") markCity();
 }
 // Back button: every screen that opens is a history entry, so Back closes one screen at a time (and only leaves the app from the main screen)
-const SET_DEPTH={menu:1,appearance:2,notif:2,loc:2,app:2,prayer:3};
+const SET_DEPTH={menu:1,homemenu:1,appearance:2,notif:2,loc:2,app:2,prayer:3};
+const HOME_VIEWS=["homemenu","appearance","app"];   // settings screens opened from the start list
 function goSettings(v){ if(!(v in SET_DEPTH)) return; history.pushState({n:"settings",v:v},""); showSettings(v); }
 function closeSettingsAll(){ if(document.getElementById("settings").style.display==="block") history.go(-(SET_DEPTH[setView]||1)); }
 window.addEventListener("popstate",e=>{
   const st=e.state||{n:"home"}, calEl=document.getElementById("cal"), setEl=document.getElementById("settings");
   document.getElementById("news").style.display = st.n==="news" ? "flex" : "none";
   if(st.n==="news") return;
-  const onPrayer = st.n==="prayer" || st.n==="cal" || st.n==="settings";   // otherwise the start list is shown
+  const onPrayer = st.n==="prayer" || st.n==="cal" || (st.n==="settings" && !HOME_VIEWS.includes(st.v));   // otherwise the start list is shown
   document.getElementById("homeView").style.display = onPrayer ? "none" : "block";
   document.getElementById("prayerView").style.display = onPrayer ? "block" : "none";
   if(st.n==="settings"){ calEl.style.display="none"; setEl.style.display="block"; showSettings(st.v||"menu"); }
@@ -510,6 +515,7 @@ window.addEventListener("popstate",e=>{
   else { calEl.style.display="none"; setEl.style.display="none"; }
 });
 try{ history.replaceState({n:"home"},""); }catch(e){}
+document.getElementById("homeSettingsBtn").addEventListener("click",()=>{ document.getElementById("settings").style.display="block"; goSettings("homemenu"); });
 document.getElementById("homePrayer").addEventListener("click",()=>{
   history.pushState({n:"prayer"},"");
   document.getElementById("homeView").style.display="none";
@@ -517,7 +523,7 @@ document.getElementById("homePrayer").addEventListener("click",()=>{
   render();
 });
 document.getElementById("settingsBtn").addEventListener("click",()=>{ document.getElementById("settings").style.display="block"; goSettings("menu"); });
-document.querySelectorAll("#setMenu .tab").forEach(b=>b.addEventListener("click",()=>goSettings(b.dataset.view)));
+document.querySelectorAll("#setMenu .tab, #setMenuHome .tab").forEach(b=>b.addEventListener("click",()=>goSettings(b.dataset.view)));
 document.getElementById("setClose").addEventListener("click",()=>{ history.back(); });
 document.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{ setCity(b.dataset.city); closeSettingsAll(); }));
 
@@ -587,7 +593,7 @@ function restartApp(msg){
   document.getElementById("restartMsg").textContent=msg;
   document.getElementById("restarting").style.display="flex";
   const st=history.state, onPrayer=document.getElementById("prayerView").style.display==="block";
-  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="cal" ? 2 : st.n==="settings" ? 1+(SET_DEPTH[st.v]||1) : st.n==="news" ? (onPrayer?2:1) : 0;
+  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="cal" ? 2 : st.n==="settings" ? (HOME_VIEWS.includes(st.v)?0:1)+(SET_DEPTH[st.v]||1) : st.n==="news" ? (onPrayer?2:1) : 0;
   if(d) history.go(-d);   // leave the history clean so Back works normally after the restart
   setTimeout(()=>location.reload(),1500);
 }
@@ -605,9 +611,8 @@ function restorePrevious(){
 
 // What’s new: shown once, the first time a newer version starts
 const WHATS_NEW=[
-  "The app now opens to a list, with “Prayer times” at the top.",
-  "Tap “Prayer times” to open the prayer times screen.",
-  "The Back button on that screen returns to the list."
+  "Appearance and App Update moved to a new Settings button on the start list.",
+  "Notifications and Location stay in the Settings inside Prayer times."
 ];
 function maybeShowWhatsNew(){
   let last=null;
