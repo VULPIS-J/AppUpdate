@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.0.4">
+<meta name="app-version" content="1.0.5">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -120,6 +120,10 @@ tr.today .hj{color:var(--accent)}
 </style>
 </head>
 <body>
+<div id="homeView">
+  <button class="tab" id="homePrayer" type="button">Prayer times</button>
+</div>
+<div id="prayerView" style="display:none">
 <div class="top"><div class="brand">Prayer Times</div><div class="btns"><button id="calBtn" type="button" aria-label="Calendar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button><button id="settingsBtn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
 <h1 id="cityName">Ankara</h1>
 <p class="date" id="date"></p>
@@ -127,6 +131,7 @@ tr.today .hj{color:var(--accent)}
 <div class="warn" id="warn"></div>
 <div class="next"><b id="nextName">—</b><div class="count" id="count">--:--:--</div></div>
 <ul id="list"></ul>
+</div>
 
 <div id="cal">
   <div class="calhead">
@@ -496,11 +501,21 @@ function closeSettingsAll(){ if(document.getElementById("settings").style.displa
 window.addEventListener("popstate",e=>{
   const st=e.state||{n:"home"}, calEl=document.getElementById("cal"), setEl=document.getElementById("settings");
   document.getElementById("news").style.display = st.n==="news" ? "flex" : "none";
+  if(st.n==="news") return;
+  const onPrayer = st.n==="prayer" || st.n==="cal" || st.n==="settings";   // otherwise the start list is shown
+  document.getElementById("homeView").style.display = onPrayer ? "none" : "block";
+  document.getElementById("prayerView").style.display = onPrayer ? "block" : "none";
   if(st.n==="settings"){ calEl.style.display="none"; setEl.style.display="block"; showSettings(st.v||"menu"); }
   else if(st.n==="cal"){ setEl.style.display="none"; calEl.style.display="block"; }
   else { calEl.style.display="none"; setEl.style.display="none"; }
 });
 try{ history.replaceState({n:"home"},""); }catch(e){}
+document.getElementById("homePrayer").addEventListener("click",()=>{
+  history.pushState({n:"prayer"},"");
+  document.getElementById("homeView").style.display="none";
+  document.getElementById("prayerView").style.display="block";
+  render();
+});
 document.getElementById("settingsBtn").addEventListener("click",()=>{ document.getElementById("settings").style.display="block"; goSettings("menu"); });
 document.querySelectorAll("#setMenu .tab").forEach(b=>b.addEventListener("click",()=>goSettings(b.dataset.view)));
 document.getElementById("setClose").addEventListener("click",()=>{ history.back(); });
@@ -571,7 +586,8 @@ document.getElementById("appRestore").addEventListener("click",()=>{ restorePrev
 function restartApp(msg){
   document.getElementById("restartMsg").textContent=msg;
   document.getElementById("restarting").style.display="flex";
-  const st=history.state, d = st && st.n==="settings" ? (SET_DEPTH[st.v]||1) : (st && (st.n==="cal"||st.n==="news") ? 1 : 0);
+  const st=history.state, onPrayer=document.getElementById("prayerView").style.display==="block";
+  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="cal" ? 2 : st.n==="settings" ? 1+(SET_DEPTH[st.v]||1) : st.n==="news" ? (onPrayer?2:1) : 0;
   if(d) history.go(-d);   // leave the history clean so Back works normally after the restart
   setTimeout(()=>location.reload(),1500);
 }
@@ -589,9 +605,9 @@ function restorePrevious(){
 
 // What’s new: shown once, the first time a newer version starts
 const WHATS_NEW=[
-  "New Appearance setting at the top of Settings: Dark, Light or Default.",
-  "Default follows your device’s theme.",
-  "In Light mode the gold text turns green."
+  "The app now opens to a list, with “Prayer times” at the top.",
+  "Tap “Prayer times” to open the prayer times screen.",
+  "The Back button on that screen returns to the list."
 ];
 function maybeShowWhatsNew(){
   let last=null;
