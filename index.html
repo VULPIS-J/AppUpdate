@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.0.10">
+<meta name="app-version" content="1.1.0">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -135,6 +135,81 @@ tr.today .hj{color:var(--accent)}
 :root[data-color="purple"][data-theme="light"]{--bg:#f6f3fb;--panel:#ffffff;--line:#ddd6ea;--text:#1f1830;--muted:#6a5d86;--accent:#6a3fb5}
 @media (prefers-color-scheme:light){:root[data-color="purple"]:not([data-theme="dark"]){--bg:#f6f3fb;--panel:#ffffff;--line:#ddd6ea;--text:#1f1830;--muted:#6a5d86;--accent:#6a3fb5}}
 .copt .sw{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:10px;vertical-align:-1px}
+/* InkWell (documents). It follows the app's Appearance settings: the theme and the accent color come from the same variables as the rest of the app. */
+#inkView{display:none;position:fixed;inset:0;z-index:10;flex-direction:column;background:var(--bg);color:var(--text);font-size:14px;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);--ln:var(--line);--ch:var(--panel);--tx:var(--text);--mu:var(--muted);--ac:var(--accent);--ab:var(--line)}
+@supports (background:color-mix(in srgb,red,blue)){#inkView{--ab:color-mix(in srgb,var(--accent) 18%,var(--panel))}}
+#inkView.kl>#kHead,#inkView.kl>#kTb,#inkView.kl>#kFb,#inkView.kl>#kWs,#inkView.kl>#kSb{display:none}
+#kHead,#kTb,#kFb,#kSb{background:var(--ch);border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:6px;padding:6px 8px}
+#kHead{gap:8px}
+#kTtl{flex:1;min-width:0;border:0;background:transparent;color:var(--tx);font:600 16px Georgia,serif;padding:6px;border-radius:6px}
+#kTtl:focus{outline:2px solid var(--ac)}
+#kSt{color:var(--mu);font-size:12px;white-space:nowrap}
+#kHead button,#kTb button,#kFb button,#kSb button,#kTb .kb{font:inherit;color:var(--tx);background:transparent;border:1px solid transparent;border-radius:6px;min-width:34px;height:34px;padding:0 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;position:relative}
+#kHead button:hover,#kTb button:hover,#kTb .kb:hover,#kTb select:hover,#kFb button:hover,#kSb button:hover{background:var(--ab)}
+#kTb button.on{background:var(--ab);border-color:var(--ac);color:var(--ac)}
+#inkView .kpl{border-color:var(--ln)}
+#kTb select{font:inherit;color:var(--tx);border:1px solid var(--ln);background:var(--ch);border-radius:6px;height:34px;padding:0 6px;max-width:120px;cursor:pointer}
+#inkView button:focus-visible,#inkView select:focus-visible,#inkView input:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+#kTb{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:thin}
+#kTb>*{flex:none}
+#kTb .ksp{width:1px;height:22px;background:var(--ln);margin:0 2px}
+@media(min-width:900px){#kTb{flex-wrap:wrap}}
+#kTb svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+#kTb .kb input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
+#kTb .kb i{position:absolute;left:8px;right:8px;bottom:5px;height:3px;border-radius:2px}
+#kWs{flex:1;overflow:auto;padding:0 6px}
+#kEd{width:794px;min-height:1123px;margin:18px auto 40px;padding:96px;background:#fff;color:#111;font:12pt/1.6 Georgia,"Times New Roman",serif;outline:0;box-shadow:0 2px 14px rgba(0,0,0,.22);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 1121px,#d9dde2 1121px,#d9dde2 1123px);overflow-wrap:anywhere}
+#kEd h1,#kEd h2,#kEd h3{color:inherit;font-weight:bold}
+#kEd h1{font-size:24pt;line-height:1.2;margin:.6em 0 .3em}
+#kEd h2{font-size:18pt;line-height:1.25;margin:.6em 0 .3em}
+#kEd h3{font-size:14pt;margin:.6em 0 .3em}
+#kEd p{margin:0 0 .6em}
+#kEd ul,#kEd ol{margin:0 0 .6em;padding:0 0 0 1.8em}
+#kEd ul{list-style:disc}
+#kEd ol{list-style:decimal}
+#kEd li{display:list-item;justify-content:normal;padding:0;border:0;font-size:inherit}
+#kEd blockquote{margin:.8em 0;padding-left:16px;border-left:3px solid #0f766e;color:#555;font-style:italic}
+#kEd table{border-collapse:collapse;margin:.6em 0;width:100%;max-width:none;table-layout:auto;font-size:inherit}
+#kEd td,#kEd th{border:1px solid #999;padding:6px 8px;min-width:40px;vertical-align:top;text-align:left;white-space:normal;width:auto;color:inherit;font-size:inherit}
+#kEd th{font-weight:bold}
+#kEd img{max-width:100%;height:auto}
+#kEd a{color:#0b5cad}
+#kEd hr.pb{border:0;border-top:2px dashed #aaa;margin:1.2em 0;break-after:page}
+#kFb,#kSb{font-size:12px;color:var(--mu)}
+#kFb{flex-wrap:wrap}
+#kFb[hidden]{display:none}
+#kFb input,#kMd input{border:1px solid var(--ln);background:var(--bg);color:var(--tx);border-radius:6px;height:34px;padding:0 8px;font:inherit;min-width:0;flex:1}
+#kSb{border-top:1px solid var(--ln);border-bottom:0;justify-content:space-between}
+#kMk{position:fixed;inset:0;background:rgba(8,14,24,.88);display:flex;align-items:center;justify-content:center;padding:20px;z-index:30}
+#kMk[hidden]{display:none}
+#kMd{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:420px;max-height:80vh;overflow:auto}
+#kMd h3{margin:0 0 12px;font-size:1.2rem;font-weight:normal;color:var(--accent)}
+#kMd p{margin:0 0 4px;color:var(--muted)}
+#kMd label{display:block;margin:8px 0;color:var(--muted)}
+#kMd label input{display:block;width:100%;margin-top:4px}
+.krow{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.kmenu{display:grid;gap:8px}
+.kmenu button{justify-content:flex-start;border-radius:12px;padding:12px 14px}
+#kMd .kac,#kHome .kac{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+#kTs{position:fixed;left:50%;bottom:56px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 14px;border-radius:8px;z-index:31;opacity:0;transition:opacity .2s;pointer-events:none}
+#kTs.on{opacity:1}
+#kHome{display:none;flex:1;overflow:auto;padding:20px 18px}
+#inkView.kl>#kHome{display:block}
+.khw{max-width:520px;margin:0 auto}
+.kdi{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;padding:12px 10px 12px 14px}
+.kdi span{flex:1;cursor:pointer;display:grid;min-width:0}
+.kdi b{font-weight:normal;font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kdi p{margin:2px 0 0;color:var(--muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kdi small{color:var(--muted);font-size:.7rem;margin-top:2px}
+@media print{
+  body.kprint>*:not(#inkView){display:none!important}
+  body.kprint{display:block;max-width:none;margin:0;padding:0;background:#fff}
+  body.kprint #inkView{position:static;display:block!important;background:#fff;padding:0}
+  body.kprint #kHead,body.kprint #kTb,body.kprint #kFb,body.kprint #kSb,body.kprint #kMk,body.kprint #kTs,body.kprint #kHome{display:none!important}
+  body.kprint #kWs{overflow:visible;padding:0}
+  body.kprint #kEd{zoom:1!important;width:auto;min-height:0;margin:0;padding:0;box-shadow:none;background-image:none}
+  @page{size:A4;margin:20mm}
+}
 </style>
 </head>
 <body>
@@ -142,7 +217,8 @@ tr.today .hj{color:var(--accent)}
 <script>setTimeout(function(){var e=document.getElementById("splash");if(!e)return;e.classList.add("hide");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e);},500);},3000);</script>
 <div id="homeView">
   <div class="top"><div class="brand">Home</div><div class="btns"><button id="homeSettingsBtn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
-  <button class="tab" id="homePrayer" type="button">Prayer times</button>
+  <button class="tab" id="homeInk" type="button">InkWell</button>
+  <button class="tab" id="homePrayer" type="button">Prayer Times</button>
 </div>
 <div id="prayerView" style="display:none">
 <div class="top"><div class="brand">Prayer Times</div><div class="btns"><button id="calBtn" type="button" aria-label="Calendar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button><button id="settingsBtn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
@@ -228,6 +304,90 @@ tr.today .hj{color:var(--accent)}
       <button class="opt" type="button" data-city="Nieuwegein">Nieuwegein</button>
     </div>
   </div>
+</div>
+
+<div id="inkView">
+  <div id="kHead">
+    <button type="button" class="kpl" data-a="back" title="All documents">Documents</button>
+    <input id="kTtl" aria-label="Document title" value="Untitled" spellcheck="false">
+    <span id="kSt">Saved</span>
+    <button type="button" class="kpl" data-a="export">Export</button>
+  </div>
+
+  <div id="kTb">
+    <button type="button" data-c="undo" title="Undo">↶</button><button type="button" data-c="redo" title="Redo">↷</button><span class="ksp"></span>
+    <select data-s="block" title="Paragraph style" aria-label="Paragraph style">
+      <option value="p">Normal</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Quote</option>
+    </select>
+    <select data-s="font" title="Font" aria-label="Font">
+      <option value="Georgia,serif">Georgia</option><option value="'Times New Roman',serif">Times New Roman</option><option value="Arial,Helvetica,sans-serif">Arial</option><option value="Verdana,sans-serif">Verdana</option><option value="'Trebuchet MS',sans-serif">Trebuchet</option><option value="Palatino,'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Courier New</option><option value="cursive">Cursive</option>
+    </select>
+    <select data-s="size" title="Font size" aria-label="Font size">
+      <option>8</option><option>9</option><option>10</option><option>11</option><option selected>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option><option>32</option><option>36</option><option>48</option><option>72</option>
+    </select>
+    <span class="ksp"></span>
+    <button type="button" data-c="bold" title="Bold"><b>B</b></button>
+    <button type="button" data-c="italic" title="Italic"><i>I</i></button>
+    <button type="button" data-c="underline" title="Underline"><u>U</u></button>
+    <button type="button" data-c="strikeThrough" title="Strikethrough"><s>S</s></button>
+    <button type="button" data-c="subscript" title="Subscript">x₂</button>
+    <button type="button" data-c="superscript" title="Superscript">x²</button>
+    <button type="button" data-c="removeFormat" title="Clear formatting">Tx</button>
+    <label class="kb" title="Text color">A<i style="background:#c0392b"></i><input type="color" value="#c0392b" data-col="foreColor"></label>
+    <label class="kb" title="Highlight">▮<i style="background:#ffe45c"></i><input type="color" value="#ffe45c" data-col="hiliteColor"></label>
+    <span class="ksp"></span>
+    <button type="button" data-c="justifyLeft" title="Align left"><svg viewBox="0 0 16 16"><path d="M2 3h12M2 6.5h8M2 10h12M2 13.5h8"/></svg></button>
+    <button type="button" data-c="justifyCenter" title="Center"><svg viewBox="0 0 16 16"><path d="M2 3h12M4 6.5h8M2 10h12M4 13.5h8"/></svg></button>
+    <button type="button" data-c="justifyRight" title="Align right"><svg viewBox="0 0 16 16"><path d="M2 3h12M6 6.5h8M2 10h12M6 13.5h8"/></svg></button>
+    <button type="button" data-c="justifyFull" title="Justify"><svg viewBox="0 0 16 16"><path d="M2 3h12M2 6.5h12M2 10h12M2 13.5h12"/></svg></button>
+    <span class="ksp"></span>
+    <button type="button" data-c="insertUnorderedList" title="Bulleted list">•≡</button>
+    <button type="button" data-c="insertOrderedList" title="Numbered list">1.≡</button>
+    <button type="button" data-c="outdent" title="Decrease indent">⇤</button>
+    <button type="button" data-c="indent" title="Increase indent">⇥</button>
+    <select data-s="lh" title="Line spacing" aria-label="Line spacing">
+      <option value="">Spacing</option><option>1</option><option>1.15</option><option>1.5</option><option>2</option><option>2.5</option>
+    </select>
+    <span class="ksp"></span>
+    <button type="button" data-a="link" title="Link (Ctrl+K)">Link</button>
+    <button type="button" data-a="img" title="Insert image">Image</button>
+    <button type="button" data-a="table" title="Insert table">Table</button>
+    <button type="button" data-a="hr" title="Horizontal line">―</button>
+    <button type="button" data-a="pb" title="Page break">Break</button>
+    <button type="button" data-a="date" title="Insert date">Date</button>
+    <span class="ksp"></span>
+    <button type="button" data-a="ra" title="Add row">+Row</button><button type="button" data-a="rd" title="Delete row">−Row</button>
+    <button type="button" data-a="ca" title="Add column">+Col</button><button type="button" data-a="cd" title="Delete column">−Col</button>
+    <button type="button" data-a="td" title="Delete table">✕Tbl</button>
+    <span class="ksp"></span>
+    <button type="button" data-a="find" title="Find and replace (Ctrl+F)">Find</button>
+  </div>
+
+  <div id="kFb" hidden>
+    <input id="kFq" placeholder="Find" aria-label="Find">
+    <input id="kFr" placeholder="Replace with" aria-label="Replace with">
+    <button type="button" class="kpl" data-a="fnd">Next</button>
+    <button type="button" class="kpl" data-a="rep">Replace</button>
+    <button type="button" class="kpl" data-a="repAll">Replace all</button>
+    <button type="button" data-a="closeFind" aria-label="Close find">✕</button>
+  </div>
+
+  <div id="kWs"><div id="kEd" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" aria-label="Document"></div></div>
+
+  <div id="kSb">
+    <span id="kCnt"></span>
+    <span><button type="button" data-a="zout" title="Zoom out">−</button><button type="button" data-a="zfit" title="Fit width"><span id="kZl">100%</span></button><button type="button" data-a="zin" title="Zoom in">+</button></span>
+  </div>
+
+  <div id="kHome"><div class="khw">
+    <div class="top"><div class="brand">InkWell</div><div class="btns"><button type="button" data-a="imp">Import</button><button type="button" class="kac" data-a="new">New</button><button type="button" data-a="back">Home</button></div></div>
+    <div id="kHl"></div>
+  </div></div>
+
+  <input type="file" id="kImg" accept="image/*" hidden>
+  <input type="file" id="kImp" accept=".html,.htm,.txt,.md,text/*" hidden>
+  <div id="kMk" hidden><div id="kMd"></div></div>
+  <div id="kTs"></div>
 </div>
 
 <div id="restarting" class="modal"><div class="modalbox"><p id="restartMsg" style="margin:0;text-align:center"></p></div></div>
@@ -542,8 +702,11 @@ window.addEventListener("popstate",e=>{
   document.getElementById("news").style.display = st.n==="news" ? "flex" : "none";
   if(st.n==="news") return;
   const onPrayer = st.n==="prayer" || st.n==="cal" || (st.n==="settings" && !HOME_VIEWS.includes(st.v));   // otherwise the start list is shown
-  document.getElementById("homeView").style.display = onPrayer ? "none" : "block";
+  const onInk = st.n==="ink" || st.n==="inkdoc", inkEl=document.getElementById("inkView");
+  document.getElementById("homeView").style.display = (onPrayer||onInk) ? "none" : "block";
   document.getElementById("prayerView").style.display = onPrayer ? "block" : "none";
+  if(onInk){ inkEl.style.display="flex"; if(Ink) Ink.enter(st.n==="inkdoc" ? "edit" : "list"); }
+  else if(inkEl.style.display==="flex"){ if(Ink) Ink.leave(); inkEl.style.display="none"; }
   if(st.n==="settings"){ calEl.style.display="none"; setEl.style.display="block"; showSettings(st.v||"menu"); }
   else if(st.n==="cal"){ setEl.style.display="none"; calEl.style.display="block"; }
   else { calEl.style.display="none"; setEl.style.display="none"; }
@@ -555,6 +718,13 @@ document.getElementById("homePrayer").addEventListener("click",()=>{
   document.getElementById("homeView").style.display="none";
   document.getElementById("prayerView").style.display="block";
   render();
+});
+document.getElementById("homeInk").addEventListener("click",()=>{
+  if(!Ink) return;
+  history.pushState({n:"ink"},"");
+  document.getElementById("homeView").style.display="none";
+  document.getElementById("inkView").style.display="flex";
+  Ink.enter("list");
 });
 document.getElementById("settingsBtn").addEventListener("click",()=>{ document.getElementById("settings").style.display="block"; goSettings("menu"); });
 document.querySelectorAll("#setMenu .tab, #setMenuHome .tab").forEach(b=>b.addEventListener("click",()=>goSettings(b.dataset.view)));
@@ -627,7 +797,7 @@ function restartApp(msg){
   document.getElementById("restartMsg").textContent=msg;
   document.getElementById("restarting").style.display="flex";
   const st=history.state, onPrayer=document.getElementById("prayerView").style.display==="block";
-  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="cal" ? 2 : st.n==="settings" ? (HOME_VIEWS.includes(st.v)?0:1)+(SET_DEPTH[st.v]||1) : st.n==="news" ? (onPrayer?2:1) : 0;
+  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="ink" ? 1 : st.n==="inkdoc" ? 2 : st.n==="cal" ? 2 : st.n==="settings" ? (HOME_VIEWS.includes(st.v)?0:1)+(SET_DEPTH[st.v]||1) : st.n==="news" ? (onPrayer?2:1) : 0;
   if(d) history.go(-d);   // leave the history clean so Back works normally after the restart
   setTimeout(()=>location.reload(),1500);
 }
@@ -643,9 +813,232 @@ function restorePrevious(){
   restartApp("Restoring the previous version…");
 }
 
+// ---- InkWell: create, edit & export documents (own scope; a failure here can never stop the rest of the app) ----
+let Ink=null;
+try{ Ink=(function(){
+const $=s=>document.querySelector(s), kv=$("#inkView"), ed=$("#kEd"), ttl=$("#kTtl"), tb=$("#kTb");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mem={}, store={
+  g(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k]||null; } },
+  s(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+};
+let docs={}, cur=null, saved=null, tm, z=1;
+try{ docs=JSON.parse(store.g("ik.docs")||"{}")||{}; }catch(e){ docs={}; }
+
+/* selection handling so the toolbar keeps the caret */
+document.addEventListener("selectionchange",()=>{
+  const s=getSelection();
+  if(s.rangeCount && ed.contains(s.anchorNode)){
+    saved=s.getRangeAt(0).cloneRange();
+    tb.querySelectorAll("[data-c]").forEach(b=>{ try{ b.classList.toggle("on",document.queryCommandState(b.dataset.c)); }catch(e){} });
+  }
+});
+function restore(){ ed.focus(); if(saved){ const s=getSelection(); s.removeAllRanges(); s.addRange(saved); } }
+function cmd(c,v=null){ restore(); document.execCommand("styleWithCSS",false,true); document.execCommand(c,false,v); upd(); }
+function ins(h){ restore(); document.execCommand("insertHTML",false,h); upd(); }
+function setSize(pt){
+  restore(); document.execCommand("styleWithCSS",false,false); document.execCommand("fontSize",false,7);
+  ed.querySelectorAll('font[size="7"]').forEach(f=>{ const s=document.createElement("span"); s.style.fontSize=pt+"pt"; s.innerHTML=f.innerHTML; f.replaceWith(s); }); upd();
+}
+function lh(v){
+  if(!v) return; restore(); const r=getSelection().getRangeAt(0);
+  [...ed.children].forEach(c=>{ if(r.intersectsNode(c)) c.style.lineHeight=v; }); upd();
+}
+tb.addEventListener("mousedown",e=>{ if(e.target.closest("button")) e.preventDefault(); });
+tb.addEventListener("click",e=>{ const b=e.target.closest("button[data-c]"); if(b) cmd(b.dataset.c); });
+tb.addEventListener("change",e=>{
+  const s=e.target.dataset.s, v=e.target.value;
+  if(s==="block") cmd("formatBlock","<"+v+">");
+  else if(s==="font") cmd("fontName",v);
+  else if(s==="size") setSize(v);
+  else if(s==="lh") lh(v);
+});
+tb.addEventListener("input",e=>{
+  const c=e.target.dataset.col; if(!c) return;
+  const i=e.target.parentElement.querySelector("i"); if(i) i.style.background=e.target.value;
+  cmd(c,e.target.value);
+});
+
+/* modal helpers */
+function modal(h){ $("#kMd").innerHTML=h; $("#kMk").hidden=false; }
+function closeM(){ $("#kMk").hidden=true; }
+$("#kMk").addEventListener("mousedown",e=>{ if(e.target.id==="kMk") closeM(); });
+function ask(t,f,cb){
+  modal(`<h3>${t}</h3>`+f.map((x,i)=>`<label>${x[0]}<input id="kq${i}" value="${esc(x[1])}"></label>`).join("")+`<div class="krow"><button type="button" data-a="closeM">Cancel</button><button type="button" class="kac" id="kOk">OK</button></div>`);
+  $("#kOk").onclick=()=>{ const v=f.map((_,i)=>$("#kq"+i).value); closeM(); cb(v); };
+  $("#kq0").focus(); $("#kq0").select();
+}
+function toast(m){ const t=$("#kTs"); t.textContent=m; t.classList.add("on"); clearTimeout(t._); t._=setTimeout(()=>t.classList.remove("on"),1800); }
+
+/* insert: link, image, table */
+function addLink(){
+  ask("Insert link",[["Web address","https://"]],v=>{
+    const u=v[0].trim().replace(/"/g,"%22"); if(!u) return; restore();
+    if(getSelection().isCollapsed) ins(`<a href="${u}">${esc(u)}</a>`); else cmd("createLink",u);
+  });
+}
+$("#kImg").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=()=>{ restore(); document.execCommand("insertImage",false,r.result); upd(); }; r.readAsDataURL(f); e.target.value="";
+};
+ed.addEventListener("dblclick",e=>{
+  if(e.target.tagName!=="IMG") return; const im=e.target;
+  ask("Image width (%)",[["10 to 100",Math.round(im.getBoundingClientRect().width/ed.clientWidth*100)||100]],v=>{ im.style.width=Math.min(100,Math.max(10,+v[0]||100))+"%"; upd(); });
+});
+function addTable(){
+  ask("Insert table",[["Rows",3],["Columns",3]],v=>{
+    const r=Math.min(50,+v[0]), c=Math.min(12,+v[1]); if(!r||!c) return;
+    let h="<table>"; for(let i=0;i<r;i++){ h+="<tr>"; for(let j=0;j<c;j++) h+="<td><br></td>"; h+="</tr>"; }
+    ins(h+"</table><p><br></p>");
+  });
+}
+function cell(){ const n=saved&&saved.startContainer, e=n&&(n.nodeType===1?n:n.parentElement); return e&&e.closest("td,th"); }
+function tbl(op){
+  const c=cell(); if(!c) return toast("Place the cursor inside a table first");
+  const tr=c.parentElement, t=c.closest("table"), i=c.cellIndex;
+  if(op==="ra"){ const n=tr.cloneNode(true); n.querySelectorAll("td,th").forEach(x=>x.innerHTML="<br>"); tr.after(n); }
+  if(op==="rd") tr.remove();
+  if(op==="ca") t.querySelectorAll("tr").forEach(r=>{ if(r.cells[i]){ const x=r.cells[i].cloneNode(false); x.innerHTML="<br>"; r.cells[i].after(x); } });
+  if(op==="cd") t.querySelectorAll("tr").forEach(r=>r.cells[i]&&r.cells[i].remove());
+  if(op==="td"||!t.rows.length||!t.rows[0].cells.length) t.remove();
+  upd();
+}
+
+/* find and replace */
+function openFind(){ $("#kFb").hidden=false; const s=getSelection().toString(); if(s&&s.length<60) $("#kFq").value=s; $("#kFq").focus(); }
+function fnd(){ const q=$("#kFq").value; if(!q) return; if(!window.find(q,false,false,true)) toast("No matches"); }
+function rep(){
+  const s=getSelection();
+  if(ed.contains(s.anchorNode) && s.toString() && s.toString().toLowerCase()===$("#kFq").value.toLowerCase()){ document.execCommand("insertText",false,$("#kFr").value); upd(); }
+  fnd();
+}
+function repAll(){
+  const q=$("#kFq").value; if(!q) return;
+  const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"), w=document.createTreeWalker(ed,4), a=[]; let n=0;
+  while(w.nextNode()) a.push(w.currentNode);
+  a.forEach(t=>{ t.nodeValue=t.nodeValue.replace(re,()=>{ n++; return $("#kFr").value; }); });
+  toast(n+(n===1?" replacement":" replacements")); upd();
+}
+$("#kFq").addEventListener("keydown",e=>{ if(e.key==="Enter") fnd(); });
+
+/* documents */
+function save(){ store.s("ik.docs",JSON.stringify(docs)); }
+function commit(){
+  if(!cur||!docs[cur]) return;
+  const h=ed.innerHTML, t=ttl.value.trim()||"Untitled", d=docs[cur];
+  if(d.h!==h||d.t!==t){ d.h=h; d.t=t; d.m=Date.now(); save(); }
+  $("#kSt").textContent="Saved";
+}
+function upd(){ counts(); $("#kSt").textContent="Saving…"; clearTimeout(tm); tm=setTimeout(commit,500); }
+function counts(){
+  const t=ed.innerText.trim(), w=t?t.split(/\s+/).length:0, pg=Math.max(1,Math.ceil(ed.scrollHeight/1123));
+  $("#kCnt").textContent=w+" words · "+t.length+" characters · "+pg+(pg>1?" pages":" page");
+}
+function setMode(m){
+  if(m==="list"){ commit(); renderList(); kv.classList.add("kl"); $("#kHome").scrollTop=0; }
+  else kv.classList.remove("kl");
+}
+function create(h){ const id="d"+Date.now(); docs[id]={t:"Untitled",h:h||"<p><br></p>",m:Date.now()}; save(); return id; }
+function openDoc(id){
+  if(!docs[id]) return;
+  commit(); cur=id; ttl.value=docs[id].t; ed.innerHTML=docs[id].h; saved=null; closeM();
+  if(kv.classList.contains("kl")) history.pushState({n:"inkdoc"},"");   // Back returns to the document list
+  setMode("edit"); $("#kWs").scrollTop=0; counts(); $("#kSt").textContent="Saved";
+}
+function newDoc(h){ openDoc(create(h)); ed.focus(); }
+function renderList(){
+  const ids=Object.keys(docs).sort((a,b)=>docs[b].m-docs[a].m);
+  $("#kHl").innerHTML=ids.length?ids.map(i=>`<div class="kdi"><span data-a="open" data-i="${i}"><b>${esc(docs[i].t)}</b><p>${esc(new DOMParser().parseFromString(docs[i].h,"text/html").body.textContent.trim().slice(0,120)||"Empty document")}</p><small>${new Date(docs[i].m).toLocaleString()}</small></span><button type="button" data-a="del" data-i="${i}" aria-label="Delete" title="Delete">✕</button></div>`).join(""):'<p class="muted">No documents yet. Choose New to start writing.</p>';
+}
+function del(i){
+  if(!docs[i]) return;
+  modal(`<h3>Delete “${esc(docs[i].t)}”?</h3><p>This cannot be undone.</p><div class="krow"><button type="button" data-a="closeM">Keep</button><button type="button" class="kac" data-a="rm" data-i="${i}">Delete</button></div>`);
+}
+function rm(i){ delete docs[i]; save(); if(i===cur) cur=null; closeM(); renderList(); }
+
+/* import and export */
+$("#kImp").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=()=>{
+    let h;
+    if(/\.html?$/i.test(f.name)){
+      const b=new DOMParser().parseFromString(r.result,"text/html").body;
+      b.querySelectorAll("script,iframe,object,embed").forEach(x=>x.remove());
+      b.querySelectorAll("*").forEach(x=>[...x.attributes].forEach(a=>{ if(/^on/i.test(a.name)) x.removeAttribute(a.name); }));
+      h=b.innerHTML;
+    }else h=r.result.split(/\n{2,}/).map(p=>"<p>"+esc(p).replace(/\n/g,"<br>")+"</p>").join("");
+    newDoc(h); ttl.value=f.name.replace(/\.\w+$/,""); upd();
+  };
+  r.readAsText(f); e.target.value="";
+};
+function fname(x){ return (ttl.value.trim()||"Untitled").replace(/[\\/:*?"<>|]+/g,"-")+x; }
+function dl(name,type,data){
+  const b=new Blob([data],{type});
+  if(matchMedia("(pointer:coarse)").matches && navigator.canShare){
+    const f=new File([b],name,{type});
+    if(navigator.canShare({files:[f]})){ navigator.share({files:[f],title:name}).catch(()=>{}); return; }
+  }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+function exp(k){
+  commit(); closeM(); const h=ed.innerHTML;
+  if(k==="doc") dl(fname(".doc"),"application/msword",'<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>'+esc(ttl.value)+'</title><style>body{font-family:Georgia,serif;font-size:12pt}table{border-collapse:collapse}td{border:1px solid #999;padding:4px}</style></head><body>'+h+'</body></html>');
+  if(k==="html") dl(fname(".html"),"text/html",'<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(ttl.value)+'</title><style>body{max-width:720px;margin:2em auto;padding:0 1em;font:12pt/1.6 Georgia,serif}table{border-collapse:collapse}td{border:1px solid #999;padding:6px}img{max-width:100%}</style></head><body>'+h+'</body></html>');
+  if(k==="txt") dl(fname(".txt"),"text/plain",ed.innerText);
+  if(k==="pdf"){ document.body.classList.add("kprint"); setTimeout(()=>window.print(),100); }
+}
+addEventListener("afterprint",()=>document.body.classList.remove("kprint"));
+function showExport(){
+  modal('<h3>Export</h3><div class="kmenu"><button type="button" data-a="exp" data-k="doc">Word document (.doc)</button><button type="button" data-a="exp" data-k="pdf">PDF (print)</button><button type="button" data-a="exp" data-k="html">Web page (.html)</button><button type="button" data-a="exp" data-k="txt">Plain text (.txt)</button><button type="button" data-a="impClose">Import a file…</button></div><div class="krow"><button type="button" data-a="closeM">Close</button></div>');
+}
+
+/* view */
+function zoom(d){
+  z=d?Math.min(2,Math.max(.3,z+d)):Math.min(1,(innerWidth-14)/794);
+  ed.style.zoom=z; $("#kZl").textContent=Math.round(z*100)+"%";
+}
+
+/* buttons */
+const A={
+  back(){ history.back(); }, export(){ showExport(); }, closeM, closeFind(){ $("#kFb").hidden=true; },
+  link:addLink, img(){ $("#kImg").click(); }, table:addTable,
+  hr(){ ins("<hr>"); }, pb(){ ins("<hr class=pb><p><br></p>"); }, date(){ ins(new Date().toLocaleDateString(undefined,{dateStyle:"long"})); },
+  ra(){ tbl("ra"); }, rd(){ tbl("rd"); }, ca(){ tbl("ca"); }, cd(){ tbl("cd"); }, td(){ tbl("td"); },
+  find:openFind, fnd, rep, repAll,
+  zin(){ zoom(.1); }, zout(){ zoom(-.1); }, zfit(){ zoom(0); },
+  imp(){ $("#kImp").click(); }, impClose(){ closeM(); $("#kImp").click(); }, new(){ newDoc(); },
+  open(b){ openDoc(b.dataset.i); }, del(b){ del(b.dataset.i); }, rm(b){ rm(b.dataset.i); }, exp(b){ exp(b.dataset.k); }
+};
+kv.addEventListener("click",e=>{ const b=e.target.closest("[data-a]"); if(b && A[b.dataset.a]) A[b.dataset.a](b); });
+
+/* events */
+ed.addEventListener("input",upd);
+ttl.addEventListener("input",upd);
+ed.addEventListener("keydown",e=>{ if(e.key==="Tab"){ e.preventDefault(); cmd(e.shiftKey?"outdent":"indent"); } });
+document.addEventListener("keydown",e=>{
+  if(!(e.ctrlKey||e.metaKey) || kv.style.display!=="flex" || kv.classList.contains("kl")) return;
+  const k=e.key.toLowerCase();
+  if(k==="s"){ e.preventDefault(); commit(); toast("Saved"); }
+  if(k==="f"){ e.preventDefault(); openFind(); }
+  if(k==="k"){ e.preventDefault(); addLink(); }
+});
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) commit(); });
+addEventListener("pagehide",commit);
+addEventListener("resize",()=>{ if(innerWidth<860) zoom(0); });
+
+/* start */
+if(!Object.keys(docs).length) create('<h1>Welcome to InkWell</h1><p>Everything you write is saved on this device, automatically and offline.</p><h2>What you can do</h2><ul><li>Style text with the toolbar: fonts, sizes, colors, highlights, headings and lists.</li><li>Insert tables, images (double-click an image to resize it), links and page breaks.</li><li>Find and replace, change line spacing, and zoom the page.</li><li>Export to Word, PDF, HTML or text from the Export button.</li></ul><p>Select this text and start replacing it with your own.</p>');
+zoom(0);
+
+return {
+  enter(m){ if(innerWidth<860) zoom(0); if(m==="edit" && !(cur&&docs[cur])) m="list"; setMode(m); if(m==="edit") counts(); },
+  leave(){ commit(); closeM(); }
+};
+})(); }catch(err){ Ink=null; }
+
 // What’s new: shown once, the first time a newer version starts
 const WHATS_NEW=[
-  "New Themes"
+  "Added InkWell. A place for you to create, edit & export documents."
 ];
 function maybeShowWhatsNew(){
   let last=null;
