@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.1.1">
+<meta name="app-version" content="1.1.2">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -210,7 +210,7 @@ tr.today .hj{color:var(--accent)}
   body.kprint #kEd{zoom:1!important;width:auto;min-height:0;margin:0;padding:0;box-shadow:none;background-image:none}
   @page{size:A4;margin:20mm}
 }
-#bookView{display:none;position:fixed;inset:0;z-index:10;background:var(--bg);color:var(--text);padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+#bookView,#notesView{display:none;position:fixed;inset:0;z-index:10;background:var(--bg);color:var(--text);padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
 </style>
 </head>
 <body>
@@ -218,8 +218,9 @@ tr.today .hj{color:var(--accent)}
 <script>setTimeout(function(){var e=document.getElementById("splash");if(!e)return;e.classList.add("hide");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e);},500);},3000);</script>
 <div id="homeView">
   <div class="top"><div class="brand">Home</div><div class="btns"><button id="homeSettingsBtn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></div>
-  <button class="tab" id="homeInk" type="button">InkWell</button>
   <button class="tab" id="homeBook" type="button">Ebook Reader</button>
+  <button class="tab" id="homeInk" type="button">InkWell</button>
+  <button class="tab" id="homeNotes" type="button">Notes Pad</button>
   <button class="tab" id="homePrayer" type="button">Prayer Times</button>
 </div>
 <div id="prayerView" style="display:none">
@@ -393,6 +394,60 @@ tr.today .hj{color:var(--accent)}
 </div>
 
 <div id="bookView"></div>
+<div id="notesView"></div>
+<template id="notesTpl">
+<style>
+/* Notes Pad. Theme and accent color come from the app's Appearance settings. */
+:host{--surface:var(--panel);--accent-text:var(--bg);font:16px/1.5 Georgia,serif}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.app{height:100%;display:flex;flex-direction:column;max-width:900px;margin:0 auto;color:var(--text);background:var(--bg)}
+.view{display:none;flex-direction:column;flex:1;min-height:0}
+.view.on{display:flex}
+header{display:flex;align-items:center;gap:8px;padding:14px 16px 8px}
+h1{font:italic normal 1.5rem/1.1 Georgia,serif;color:var(--accent);margin:0;flex:1}
+.pill{border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:.9rem}
+.search{margin:4px 16px 8px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);font:15px Georgia,serif;width:calc(100% - 32px)}
+.list{flex:1;overflow-y:auto;padding:4px 16px 90px}
+.card{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.card .t{font-weight:700;display:flex;gap:6px;align-items:center}
+.card .p{color:var(--muted);font-size:14px;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.card .d{color:var(--muted);font-size:12px;margin-top:6px}
+.empty{color:var(--muted);text-align:center;margin-top:60px;padding:0 24px}
+.fab{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-text);font-size:30px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.bar{display:flex;align-items:center;gap:4px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.bar .sp{flex:1}
+.ib{padding:8px 12px;border-radius:10px;font-size:15px}
+.ib:active{background:var(--line)}
+.danger{color:#c0392b}
+.title{border:0;outline:0;background:none;color:var(--text);font:700 24px Georgia,serif;padding:16px 16px 4px;width:100%}
+.body{flex:1;border:0;outline:0;resize:none;background:none;color:var(--text);font:17px/1.65 Georgia,serif;padding:8px 16px 24px;width:100%}
+.meta,.saved{color:var(--muted);font-size:12px}
+.meta{padding:0 16px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+<div class="app">
+  <section class="view on" id="listView">
+    <header><h1>Notes Pad</h1><button class="pill" id="homeBtn" type="button">Home</button></header>
+    <input class="search" id="q" type="search" placeholder="Search notes">
+    <div class="list" id="list"></div>
+    <button class="fab" id="newBtn" aria-label="New note">+</button>
+  </section>
+  <section class="view" id="editView">
+    <div class="bar">
+      <button class="ib" id="backBtn">← Notes</button>
+      <span class="sp"></span>
+      <span class="saved" id="saved"></span>
+      <button class="ib" id="pinBtn">Pin</button>
+      <button class="ib danger" id="delBtn">Delete</button>
+    </div>
+    <input class="title" id="title" placeholder="Title">
+    <div class="meta" id="meta"></div>
+    <textarea class="body" id="body" placeholder="Start writing…"></textarea>
+  </section>
+</div>
+</template>
+
 <template id="bookTpl">
 <style>
 /* Ebook Reader. Theme and accent color come from the app's Appearance settings (the same variables as the rest of the app). */
@@ -824,13 +879,16 @@ window.addEventListener("popstate",e=>{
   const st=e.state||{n:"home"}, calEl=document.getElementById("cal"), setEl=document.getElementById("settings");
   const onPrayer = st.n==="prayer" || st.n==="cal" || (st.n==="settings" && !HOME_VIEWS.includes(st.v));   // otherwise the start list is shown
   const onInk = st.n==="ink" || st.n==="inkdoc", inkEl=document.getElementById("inkView");
-  document.getElementById("homeView").style.display = (onPrayer||onInk||st.n==="book"||st.n==="bookread") ? "none" : "block";
+  document.getElementById("homeView").style.display = (onPrayer||onInk||st.n==="book"||st.n==="bookread"||st.n==="notes"||st.n==="noteedit") ? "none" : "block";
   document.getElementById("prayerView").style.display = onPrayer ? "block" : "none";
   if(onInk){ inkEl.style.display="flex"; if(Ink) Ink.enter(st.n==="inkdoc" ? "edit" : "list"); }
   else if(inkEl.style.display==="flex"){ if(Ink) Ink.leave(); inkEl.style.display="none"; }
   const onBook = st.n==="book" || st.n==="bookread", bookEl=document.getElementById("bookView");
   if(onBook){ document.getElementById("homeView").style.display="none"; bookEl.style.display="block"; if(Book) Book.enter(st.n==="bookread" ? "read" : "lib"); }
   else if(bookEl.style.display==="block"){ if(Book) Book.leave(); bookEl.style.display="none"; }
+  const onNotes = st.n==="notes" || st.n==="noteedit", notesEl=document.getElementById("notesView");
+  if(onNotes){ document.getElementById("homeView").style.display="none"; notesEl.style.display="block"; if(Notes) Notes.enter(st.n==="noteedit" ? "edit" : "list"); }
+  else if(notesEl.style.display==="block"){ if(Notes) Notes.leave(); notesEl.style.display="none"; }
   if(st.n==="settings"){ calEl.style.display="none"; setEl.style.display="block"; showSettings(st.v||"menu"); }
   else if(st.n==="cal"){ setEl.style.display="none"; calEl.style.display="block"; }
   else { calEl.style.display="none"; setEl.style.display="none"; }
@@ -842,6 +900,13 @@ document.getElementById("homePrayer").addEventListener("click",()=>{
   document.getElementById("homeView").style.display="none";
   document.getElementById("prayerView").style.display="block";
   render();
+});
+document.getElementById("homeNotes").addEventListener("click",()=>{
+  if(!Notes) return;
+  history.pushState({n:"notes"},"");
+  document.getElementById("homeView").style.display="none";
+  document.getElementById("notesView").style.display="block";
+  Notes.enter("list");
 });
 document.getElementById("homeBook").addEventListener("click",()=>{
   if(!Book) return;
@@ -928,7 +993,7 @@ function restartApp(msg){
   document.getElementById("restartMsg").textContent=msg;
   document.getElementById("restarting").style.display="flex";
   const st=history.state;
-  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="ink" ? 1 : st.n==="inkdoc" ? 2 : st.n==="book" ? 1 : st.n==="bookread" ? 2 : st.n==="cal" ? 2 : st.n==="settings" ? (HOME_VIEWS.includes(st.v)?0:1)+(SET_DEPTH[st.v]||1) : 0;
+  const d = !st ? 0 : st.n==="prayer" ? 1 : st.n==="ink" ? 1 : st.n==="inkdoc" ? 2 : st.n==="book" ? 1 : st.n==="bookread" ? 2 : st.n==="notes" ? 1 : st.n==="noteedit" ? 2 : st.n==="cal" ? 2 : st.n==="settings" ? (HOME_VIEWS.includes(st.v)?0:1)+(SET_DEPTH[st.v]||1) : 0;
   if(d) history.go(-d);   // leave the history clean so Back works normally after the restart
   setTimeout(()=>location.reload(),1500);
 }
@@ -1515,6 +1580,66 @@ return {
   leave(){ if(book)showLib(); }
 };
 })(); }catch(err){ Book=null; }
+
+// ---- Notes Pad (isolated in a shadow root with its own scope; a failure here can never stop the rest of the app) ----
+let Notes=null;
+try{ Notes=(function(){
+  var KEY='notespad:v1', notes=[], cur=null, timer=null;
+  function load(){try{var r=localStorage.getItem(KEY);notes=r?JSON.parse(r):[]}catch(e){notes=[]}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(notes))}catch(e){}}
+  var host=document.getElementById('notesView'), root=host.attachShadow({mode:'open'});
+  root.appendChild(document.getElementById('notesTpl').content.cloneNode(true));
+  var $=function(id){return root.getElementById(id)};
+  function fmt(t){var d=new Date(t),n=new Date();
+    if(d.toDateString()===n.toDateString())return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+    return d.toLocaleDateString([],{month:'short',day:'numeric',year:d.getFullYear()===n.getFullYear()?undefined:'numeric'})}
+  function show(v){$('listView').classList.toggle('on',v==='list');$('editView').classList.toggle('on',v==='edit')}
+  function render(){
+    var q=$('q').value.trim().toLowerCase(), box=$('list'); box.textContent='';
+    var items=notes.filter(function(n){return !q||(n.title+' '+n.body).toLowerCase().indexOf(q)>-1})
+      .sort(function(a,b){return (b.pin?1:0)-(a.pin?1:0)||b.updated-a.updated});
+    if(!items.length){var e=document.createElement('div');e.className='empty';
+      e.textContent=q?'No notes match your search.':'No notes yet. Tap + to write your first one.';box.appendChild(e);return}
+    items.forEach(function(n){
+      var c=document.createElement('button');c.className='card';
+      var t=document.createElement('div');t.className='t';t.textContent=(n.pin?'📌 ':'')+(n.title||'Untitled');
+      var p=document.createElement('div');p.className='p';p.textContent=n.body||'No additional text';
+      var d=document.createElement('div');d.className='d';d.textContent=fmt(n.updated);
+      c.append(t,p,d);c.onclick=function(){open(n.id)};box.appendChild(c)})
+  }
+  function open(id){
+    cur=notes.filter(function(n){return n.id===id})[0];if(!cur)return;
+    $('title').value=cur.title;$('body').value=cur.body;
+    $('pinBtn').textContent=cur.pin?'Unpin':'Pin';$('saved').textContent='';
+    $('meta').textContent='Edited '+fmt(cur.updated);
+    if($('listView').classList.contains('on'))history.pushState({n:'noteedit'},'');   // Back returns to the list
+    show('edit');
+    if(!cur.title&&!cur.body)$('title').focus()
+  }
+  function touch(){
+    if(!cur)return;cur.title=$('title').value;cur.body=$('body').value;cur.updated=Date.now();
+    $('saved').textContent='Saving…';clearTimeout(timer);
+    timer=setTimeout(function(){save();$('saved').textContent='Saved';$('meta').textContent='Edited '+fmt(cur.updated)},400)
+  }
+  function close(){
+    clearTimeout(timer);
+    if(cur&&!cur.title.trim()&&!cur.body.trim())notes=notes.filter(function(n){return n!==cur});
+    save();cur=null;show('list');render()
+  }
+  $('newBtn').onclick=function(){var n={id:String(Date.now()),title:'',body:'',pin:false,updated:Date.now()};notes.push(n);open(n.id)};
+  $('backBtn').onclick=function(){history.back()};
+  $('homeBtn').onclick=function(){history.back()};
+  $('title').oninput=touch;$('body').oninput=touch;
+  $('pinBtn').onclick=function(){cur.pin=!cur.pin;$('pinBtn').textContent=cur.pin?'Unpin':'Pin';touch()};
+  $('delBtn').onclick=function(){if(confirm('Delete this note?')){notes=notes.filter(function(n){return n!==cur});cur=null;save();history.back()}};
+  $('q').oninput=render;
+  load();render();
+  window.addEventListener('pagehide',function(){if(cur){cur.title=$('title').value;cur.body=$('body').value;save()}});
+  return {
+    enter:function(m){if(m==='edit'&&cur)return;if(cur)close();else{show('list');render()}},
+    leave:function(){if(cur)close()}
+  };
+})(); }catch(err){ Notes=null; }
 
 // ---- Daily update: runs every second, switches to the new day's times at midnight ----
 let lastDay = iso(new Date());
