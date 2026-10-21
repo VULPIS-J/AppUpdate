@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.1.3">
+<meta name="app-version" content="1.1.4">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -520,6 +520,22 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .empty{color:var(--mut);padding:18px 4px}
 #toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:30;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
 #toast.on{opacity:1}
+#content{position:relative}
+#inkT{position:absolute;left:0;top:0;width:0;height:0;overflow:visible;pointer-events:none}
+#stage{position:relative}
+#imgs{position:relative}
+#pgInk{position:absolute;pointer-events:none;overflow:visible}
+#penpad{display:none;position:absolute;inset:0;z-index:3;touch-action:none;cursor:crosshair}
+#rd.penmode #penpad{display:block}
+#pentray{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;padding:6px 4px}
+#pentray .dot{width:30px;height:30px;border-radius:50%;border:2px solid var(--line)}
+#pentray .dot.on{border-color:var(--fg);box-shadow:0 0 0 2px var(--acc)}
+#pentray .t{padding:8px 12px;border:1px solid var(--line);border-radius:999px;font-size:.9rem}
+#pentray .btn{padding:8px 16px}
+#rd.penmode .bot>:not(#pentray){display:none}
+#rd.penmode #pen{color:var(--acc)}
+.mk{width:14px;height:14px;border-radius:4px;display:inline-block;margin-right:8px;vertical-align:-2px}
+.sh{margin:14px 4px 4px;color:var(--mut);font:600 .75rem Georgia,serif;text-transform:uppercase;letter-spacing:.06em}
 #imgs{display:none}
 #rd.imgmode #imgs{display:block;width:100%;height:100%}
 #rd.imgmode #content{display:none}
@@ -554,13 +570,18 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
   <div class="top">
    <button class="ib" id="back" aria-label="Back to library"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
    <div id="ttl" role="button" title="Tap to rename"></div>
+   <button class="ib" id="pen" aria-label="Marker pen"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/><path d="M4 20h6"/></svg></button>
    <button class="ib" id="bm" aria-label="Add bookmark"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button>
    <button class="ib" id="menu" aria-label="Contents, search and settings"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   </div>
-  <div id="stage"><div id="view"><div id="content"></div><div id="imgs"><canvas id="pgc"></canvas></div></div></div>
+  <div id="stage"><div id="view"><div id="content"></div><div id="imgs"><canvas id="pgc"></canvas><svg id="pgInk" viewBox="0 0 1 1" preserveAspectRatio="none"></svg></div></div><div id="penpad"></div></div>
   <div class="bot">
    <input type="range" id="sl" min="0" max="1000" value="0" aria-label="Position in book">
    <div id="lbl"></div>
+   <div id="pentray" class="hide">
+    <button class="dot" data-pc="0" style="background:#ffe45c" aria-label="Yellow"></button><button class="dot" data-pc="1" style="background:#7be07b" aria-label="Green"></button><button class="dot" data-pc="2" style="background:#ff8fb8" aria-label="Pink"></button><button class="dot" data-pc="3" style="background:#6cc6ff" aria-label="Blue"></button><button class="dot" data-pc="4" style="background:#ff6b5b" aria-label="Red"></button>
+    <button class="t" id="pw" type="button">Size</button><button class="t" id="pundo" type="button">Undo</button><button class="t" id="pclr" type="button">Clear page</button><button class="btn" id="pdone" type="button">Done</button>
+   </div>
   </div>
   <aside id="pn" aria-label="Reader panel">
    <div class="tabs">
@@ -1292,7 +1313,7 @@ const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2600)};
 
 const FONTS={geo:"Georgia,'Times New Roman',serif",tnr:"'Times New Roman',Times,serif",sans:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif"};
-let set=Object.assign({font:'geo',size:19,lh:1.6,m:34,mode:'page'},ls.get('folio.set',{}));
+let set=Object.assign({font:'geo',size:19,lh:1.6,m:34,mode:'page',pc:0,ps:1},ls.get('folio.set',{}));
 if(!FONTS[set.font])set.font='geo';
 let lib=ls.get('folio.lib',[]).filter(b=>b.id!=='sample');
 let book=null,chs=[],cur=0,page=0,np=1,W=0,H=0,ik=null,ipg=0,rtok=0;
@@ -1505,7 +1526,7 @@ async function showPage(k){
   const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
   x.drawImage(sc0.src,sx,0,sw,sc0.h,0,0,c.width,c.height);
  }catch(e){if(tk===rtok)toast('This page couldn’t be loaded.');return}
- ui();save();
+ renderInk();ui();save();
  const cl=x=>Math.max(0,Math.min(ik.total-1,x)),keep=new Set([-2,-1,0,1,2,3].map(d=>logical(cl(k+d)).i));
  keep.forEach(x=>{if(x!==i)getSrc(x).catch(()=>{})});
  ik.cache.forEach((p,key)=>{if(!keep.has(key)){ik.cache.delete(key);p.then(v=>{if(v&&v.src&&v.src.close)v.src.close()}).catch(()=>{})}});
@@ -1545,6 +1566,7 @@ async function openMeta(id,keep){
 }
 let meta=null;
 function start(m,bk,noPush){
+ penMode(false);if(!m.ink)m.ink=[];
  if(bk.kind==='images')return startImages(m,bk,noPush);
  ikFree();ik=null;rd.classList.remove('imgmode');$('#sl').dir='ltr';$('#shareBk').textContent='Share book';
  meta=m;book=bk;chs=bk.chapters;
@@ -1555,6 +1577,7 @@ function start(m,bk,noPush){
  requestAnimationFrame(()=>{openCh(Math.min(m.pos.ch||0,chs.length-1),m.pos.f||0);setTimeout(()=>rd.classList.remove('nochrome'),50)});
 }
 function startImages(m,bk,noPush){
+ penMode(false);if(!m.ink)m.ink=[];
  ikFree();
  meta=m;book=bk;ik=bk;chs=[];cur=0;
  $('#lib').classList.add('hide');rd.classList.remove('hide','pn-open');rd.classList.add('nochrome','imgmode');
@@ -1565,6 +1588,7 @@ function startImages(m,bk,noPush){
  requestAnimationFrame(()=>{showPage(Math.min(m.pos.pg||0,bk.total-1));setTimeout(()=>rd.classList.remove('nochrome'),50)});
 }
 function showLib(){
+ penMode(false);
  if(book)save(true);
  ikFree();ik=null;rd.classList.remove('imgmode');
  book=null;meta=null;rd.classList.add('hide','nochrome');rd.classList.remove('pn-open');$('#lib').classList.remove('hide');shelf();
@@ -1579,6 +1603,7 @@ function dims(){
   content.style.transition='none';
   np=Math.max(1,Math.round(content.scrollWidth/W));
  }else{content.style.height='';content.style.columnWidth='';content.style.transform='';np=1;page=0}
+ renderInk();
 }
 function frac(){
  if(ik)return ipg/Math.max(1,ik.total);
@@ -1650,9 +1675,128 @@ function buildToc(){
  if(ik){const step=ik.total>300?25:10,g=Math.floor(ipg/step);let h='';for(let k=0;k<ik.total;k+=step)h+=`<button class="li${Math.floor(k/step)===g?' cur':''}" data-pg="${k}">Pages ${k+1}–${Math.min(ik.total,k+step)}</button>`;$('#s-toc').innerHTML=h;return}
  $('#s-toc').innerHTML=chs.map((c,i)=>`<button class="li${i===cur?' cur':''}" data-ch="${i}">${esc(c.title)}</button>`).join('');
 }
+/* ---------- marker pen: free drawing on the page (no text needed) ---------- */
+const PENS=['#ffe45c','#7be07b','#ff8fb8','#6cc6ff','#ff6b5b'],PSZ=[8,14,26],NS='http://www.w3.org/2000/svg';
+let penOn=false,cs=null;
+const pad=$('#penpad');
+function sigNow(){return{f:set.font,s:set.size,l:set.lh,m:set.m,d:set.mode,w:view.clientWidth,h:set.mode==='page'?view.clientHeight:0}}
+function sigOk(g){const n=sigNow();return !!g&&g.f===n.f&&+g.s===+n.s&&+g.l===+n.l&&+g.m===+n.m&&g.d===n.d&&Math.abs(g.w-n.w)<=2&&Math.abs(g.h-n.h)<=2}
+function strokesHere(){
+ if(!meta||!meta.ink)return[];
+ return ik?meta.ink.filter(x=>x.pg===ipg):meta.ink.filter(x=>x.ch===cur&&sigOk(x.g));
+}
+function pathD(p){let d='M'+p[0]+' '+p[1];if(p.length<4)return d+(ik?'l.0001 0':'l.01 0');for(let i=2;i<p.length;i+=2)d+='L'+p[i]+' '+p[i+1];return d}
+function mkPath(x){
+ const e=document.createElementNS(NS,'path');
+ e.setAttribute('d',pathD(x.pts));e.setAttribute('fill','none');e.setAttribute('stroke',x.c);e.setAttribute('stroke-width',x.w);
+ e.setAttribute('stroke-opacity','.5');e.setAttribute('stroke-linecap','round');e.setAttribute('stroke-linejoin','round');
+ if(ik)e.setAttribute('vector-effect','non-scaling-stroke');
+ return e;
+}
+function ensureT(){
+ let t=content.querySelector('#inkT');
+ if(!t){t=document.createElementNS(NS,'svg');t.id='inkT';t.setAttribute('width','0');t.setAttribute('height','0');content.appendChild(t)}
+ return t;
+}
+function imgBox(){
+ const c=$('#pgc'),b=c.getBoundingClientRect();
+ if(!c.width||!c.height||!b.width||!b.height)return null;
+ const ar=c.width/c.height;let w=b.width,h=w/ar;if(h>b.height){h=b.height;w=h*ar}
+ return{l:b.left+(b.width-w)/2,t:b.top+(b.height-h)/2,w,h};
+}
+function placeImgInk(){
+ const b=imgBox();if(!b)return false;
+ const ib=$('#imgs').getBoundingClientRect(),st=$('#pgInk').style;
+ st.left=(b.l-ib.left)+'px';st.top=(b.t-ib.top)+'px';st.width=b.w+'px';st.height=b.h+'px';
+ return true;
+}
+function renderInk(){
+ if(!book)return;
+ let svg;
+ if(ik){svg=$('#pgInk');if(!placeImgInk())return}else svg=ensureT();
+ svg.innerHTML='';
+ strokesHere().forEach(x=>svg.appendChild(mkPath(x)));
+}
+function persistInk(){ls.set('folio.lib',lib);renderInk();buildMarks()}
+function penMode(on){
+ penOn=!!on&&!!book;rd.classList.toggle('penmode',penOn);$('#pentray').classList.toggle('hide',!penOn);
+ if(penOn){rd.classList.remove('nochrome','pn-open');drawTray()}
+}
+function drawTray(){
+ $$('#pentray [data-pc]').forEach(b=>b.classList.toggle('on',+b.dataset.pc===set.pc));
+ $('#pw').textContent='Size: '+['S','M','L'][set.ps];
+}
+function ptOf(e){
+ if(ik){const b=imgBox();return b?[(e.clientX-b.l)/b.w,(e.clientY-b.t)/b.h]:null}
+ const r=content.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];
+}
+pad.addEventListener('pointerdown',e=>{
+ if(!penOn||!book)return;
+ e.preventDefault();
+ let svg;if(ik){svg=$('#pgInk');if(!placeImgInk())return}else svg=ensureT();
+ const q=ptOf(e);if(!q)return;
+ if(ik){q[0]=Math.max(0,Math.min(1,q[0]));q[1]=Math.max(0,Math.min(1,q[1]))}
+ try{pad.setPointerCapture(e.pointerId)}catch(_){}
+ cs={c:PENS[set.pc],w:PSZ[set.ps],pts:[q[0],q[1]],cx:e.clientX,cy:e.clientY};
+ if(ik)cs.pg=ipg;else{cs.ch=cur;cs.g=sigNow();cs.k=set.mode==='page'?Math.floor(q[0]/Math.max(1,view.clientWidth)):Math.floor(q[1]/Math.max(1,view.clientHeight))}
+ cs.el=mkPath(cs);svg.appendChild(cs.el);
+});
+pad.addEventListener('pointermove',e=>{
+ if(!cs)return;
+ e.preventDefault();
+ if(Math.hypot(e.clientX-cs.cx,e.clientY-cs.cy)<2)return;
+ const q=ptOf(e);if(!q)return;
+ if(ik){q[0]=Math.max(0,Math.min(1,q[0]));q[1]=Math.max(0,Math.min(1,q[1]))}
+ cs.cx=e.clientX;cs.cy=e.clientY;cs.pts.push(q[0],q[1]);cs.el.setAttribute('d',pathD(cs.pts));
+});
+function endStroke(){
+ if(!cs)return;
+ const k=ik?10000:10,x={c:cs.c,w:cs.w,pts:cs.pts.map(v=>Math.round(v*k)/k)};
+ if(cs.pg!=null)x.pg=cs.pg;else{x.ch=cs.ch;x.g=cs.g;x.k=cs.k}
+ cs=null;meta.ink.push(x);persistInk();
+}
+pad.addEventListener('pointerup',endStroke);
+pad.addEventListener('pointercancel',endStroke);
+function undoInk(){
+ const h=strokesHere();if(!h.length)return;
+ meta.ink.splice(meta.ink.indexOf(h[h.length-1]),1);persistInk();
+}
+function clearHere(){
+ let v=strokesHere();
+ if(!ik)v=set.mode==='page'?v.filter(x=>x.k===page):v.filter(x=>x.pts[1]>=view.scrollTop&&x.pts[1]<=view.scrollTop+view.clientHeight);
+ if(!v.length){toast('Nothing to clear on this page');return}
+ const gone=new Set(v);meta.ink=meta.ink.filter(x=>!gone.has(x));persistInk();
+}
+function inkKey(x){return x.pg!=null?'i:'+x.pg:'t:'+x.ch+':'+x.k}
+function inkList(){
+ if(!meta.ink||!meta.ink.length)return'';
+ const m=new Map();
+ meta.ink.filter(x=>ik?x.pg!=null:x.ch!=null).forEach(x=>{const k=inkKey(x);if(!m.has(k))m.set(k,x)});
+ const arr=[...m.entries()].sort((a,b)=>a[1].pg!=null?a[1].pg-b[1].pg:(a[1].ch-b[1].ch||a[1].k-b[1].k));
+ return arr.map(([k,x])=>{
+  const t=x.pg!=null?'Page '+(x.pg+1):(chs[x.ch]?chs[x.ch].title:'Chapter '+(x.ch+1));
+  const sub=x.pg!=null?'Marker':(x.g&&x.g.d==='page'?'Marker · page '+(x.k+1):'Marker · screen '+(x.k+1));
+  return `<div style="display:flex;align-items:center"><button class="li" data-ink="${k}"><span class="mk" style="background:${x.c}"></span>${esc(t)}<small>${sub}</small></button><button class="ib" data-inkrm="${k}" aria-label="Delete marks">×</button></div>`;
+ }).join('');
+}
+function jumpInk(key){
+ const x=meta.ink.find(y=>inkKey(y)===key);if(!x)return;
+ rd.classList.remove('pn-open');
+ if(ik){showPage(x.pg);return}
+ if(!sigOk(x.g)){Object.assign(set,{font:x.g.f,size:x.g.s,lh:x.g.l,m:x.g.m,mode:x.g.d});applySet(false)}
+ openCh(x.ch,0);
+ requestAnimationFrame(()=>{
+  if(set.mode==='page'){page=Math.max(0,Math.min(np-1,x.k));paint(false)}else view.scrollTop=x.k*view.clientHeight;
+  renderInk();
+  if(!sigOk(x.g))toast('These marks were drawn at a different screen size, so they may not show.');
+ });
+}
+
 function buildMarks(){
  const el=$('#s-marks');
- el.innerHTML=meta.marks.length?meta.marks.map((b,i)=>`<div style="display:flex;align-items:center"><button class="li" data-mk="${i}">${esc(b.pg!=null?'Page '+(b.pg+1):chs[b.ch]?chs[b.ch].title:'Bookmark')}<small>${Math.round(b.p*100)}% through the book</small></button><button class="ib" data-rm="${i}" aria-label="Delete bookmark">×</button></div>`).join(''):'<p class="empty">No bookmarks yet. Use the bookmark button in the top bar to save your place.</p>';
+ const bms=meta.marks.map((b,i)=>`<div style="display:flex;align-items:center"><button class="li" data-mk="${i}">${esc(b.pg!=null?'Page '+(b.pg+1):chs[b.ch]?chs[b.ch].title:'Bookmark')}<small>${Math.round(b.p*100)}% through the book</small></button><button class="ib" data-rm="${i}" aria-label="Delete bookmark">×</button></div>`).join('');
+ const ink=inkList();
+ el.innerHTML=(ink?'<div class="sh">Marker</div>'+ink:'')+(bms?(ink?'<div class="sh">Bookmarks</div>':'')+bms:'')||'<p class="empty">No bookmarks or marks yet. Use the bookmark button to save your place, or the marker pen to draw on the page.</p>';
 }
 function tab(t){
  $$('.tabs [data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
@@ -1694,6 +1838,10 @@ $$('.tabs [data-t]').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 $('#bm').onclick=()=>{meta.marks.push(ik?{pg:ipg,p:overall()}:{ch:cur,f:frac(),p:overall()});ls.set('folio.lib',lib);buildMarks();toast('Bookmark added')};
 $('#s-toc').onclick=e=>{const g=e.target.closest('[data-pg]');if(g){showPage(+g.dataset.pg);rd.classList.remove('pn-open');return}const b=e.target.closest('[data-ch]');if(b){openCh(+b.dataset.ch);rd.classList.remove('pn-open')}};
 $('#s-marks').onclick=e=>{
+ const ir=e.target.closest('[data-inkrm]');
+ if(ir){const k=ir.dataset.inkrm;meta.ink=meta.ink.filter(x=>inkKey(x)!==k);persistInk();return}
+ const ij=e.target.closest('[data-ink]');
+ if(ij){jumpInk(ij.dataset.ink);return}
  const r=e.target.closest('[data-rm]');
  if(r){meta.marks.splice(+r.dataset.rm,1);ls.set('folio.lib',lib);buildMarks();return}
  const b=e.target.closest('[data-mk]');
@@ -1741,6 +1889,16 @@ function shareBook(){
 $('#rename').onclick=()=>rename(meta);
 $('#ttl').onclick=()=>rename(meta);
 $('#shareBk').onclick=shareBook;
+$('#pen').onclick=()=>penMode(!penOn);
+$('#pentray').onclick=e=>{
+ const d=e.target.closest('[data-pc]');
+ if(d){set.pc=+d.dataset.pc;ls.set('folio.set',set);drawTray();return}
+ if(e.target.closest('#pw')){set.ps=(set.ps+1)%3;ls.set('folio.set',set);drawTray();return}
+ if(e.target.closest('#pundo'))undoInk();
+ else if(e.target.closest('#pclr'))clearHere();
+ else if(e.target.closest('#pdone'))penMode(false);
+};
+addEventListener('resize',()=>{if(ik)setTimeout(renderInk,260)});
 $('#retype').onclick=async()=>{
  if(!meta)return;
  const m=meta,old=m.type;
