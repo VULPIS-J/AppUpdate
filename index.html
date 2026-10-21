@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.1.4">
+<meta name="app-version" content="1.1.5">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -296,7 +296,7 @@ tr.today .hj{color:var(--accent)}
       <div class="row"><span>Version</span><span class="muted" id="appVer"></span></div>
       <p class="sethead">Update address</p>
       <div class="row"><input type="url" id="appUrl" placeholder="https://…/index.html" autocapitalize="off" autocomplete="off" spellcheck="false"></div>
-      <label class="row"><span>Check automatically</span><input type="checkbox" id="appAuto"></label>
+      <label class="row"><span>Check when the app opens</span><input type="checkbox" id="appAuto"></label>
       <button class="tab upl" id="appCheck" type="button" style="margin-top:12px"><span>Check for updates now</span></button>
       <button class="tab upl" id="appRestart" type="button" style="display:none"><span>Restart to apply update</span></button>
       <p class="upstatus" id="appStatus"></p>
@@ -1035,7 +1035,7 @@ async function checkAppUpdate(manual){
     APPUP.msg="Last check failed: "+msg; saveAppUp(); show(APPUP.msg,"err");
   }
 }
-function maybeAutoAppCheck(){ if(APPUP.auto && APPUP.url && Date.now()-APPUP.last > 20*3600*1000) checkAppUpdate(false); }
+function maybeAutoAppCheck(minMs){ if(APPUP.auto && APPUP.url && Date.now()-APPUP.last > (minMs==null ? 20*3600*1000 : minMs)) checkAppUpdate(false); }
 document.getElementById("appUrl").addEventListener("change",e=>{ APPUP.url=e.target.value.trim(); APPUP.msg=""; APPUP.last=0; saveAppUp(); setAppStatus(""); });
 document.getElementById("appAuto").addEventListener("change",e=>{ APPUP.auto=e.target.checked; saveAppUp(); });
 document.getElementById("appCheck").addEventListener("click",()=>{ APPUP.url=document.getElementById("appUrl").value.trim(); saveAppUp(); checkAppUpdate(true); });
@@ -2042,9 +2042,11 @@ try{ Notes=(function(){
 // ---- Daily update: runs every second, switches to the new day's times at midnight ----
 let lastDay = iso(new Date());
 setInterval(()=>{ const k=iso(new Date()); if(k!==lastDay){ lastDay=k; render(); setupNotification(); maybeAutoAppCheck(); } else { tick(); checkAlerts(); } },1000);
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ render(); maybeAutoAppCheck(); } });
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ render(); maybeAutoAppCheck(10*60*1000); } });
 
-render(); setupNotification(); maybeAutoAppCheck();
+render(); setupNotification();
+// Every time the app opens (while the splash screen is showing) it checks for a new version, unless "Check when the app opens" is switched off in Settings > App Update
+maybeAutoAppCheck(0);
 window.__appOk=true; try{ localStorage.removeItem("app-boot-pending"); }catch(e){}   // the app started correctly
 })();
 </script>
