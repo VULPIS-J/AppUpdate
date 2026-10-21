@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.1.6">
+<meta name="app-version" content="1.1.7">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -628,6 +628,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 </div>
 </template>
 
+<div id="updAsk" class="modal"><div class="modalbox"><p id="updAskMsg" style="margin:0 0 16px;text-align:center;font-size:1.1rem"></p><div style="display:flex;gap:10px"><button type="button" id="updYes" style="width:auto;flex:1">Yes</button><button type="button" id="updNo" style="width:auto;flex:1">No</button></div></div></div>
 <div id="restarting" class="modal"><div class="modalbox"><p id="restartMsg" style="margin:0;text-align:center"></p></div></div>
 
 <script>
@@ -1069,16 +1070,20 @@ document.querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{ se
 
 // ---- App Update: download a newer copy of this whole app ----
 const APP_VERSION = (document.querySelector('meta[name="app-version"]')||{}).content || "0";
-const APPUP_KEY="app-update-v1", CODE_KEY="app-code-v1", HIST_KEY="app-code-hist-v1";
-let APPUP=Object.assign({url:"",auto:true,last:0,msg:"",skip:null},(function(){ try{ return JSON.parse(localStorage.getItem(APPUP_KEY))||{}; }catch(e){ return {}; } })());
+const APPUP_KEY="app-update-v1", CODE_KEY="app-code-v1", HIST_KEY="app-code-hist-v1", PEND_KEY="app-pending-v1";
+let APPUP=Object.assign({url:"",auto:true,last:0,msg:"",skip:null,declined:null},(function(){ try{ return JSON.parse(localStorage.getItem(APPUP_KEY))||{}; }catch(e){ return {}; } })());
 function saveAppUp(){ try{ localStorage.setItem(APPUP_KEY,JSON.stringify(APPUP)); }catch(e){} }
 function verNums(v){ return String(v).split(".").map(n=>parseInt(n,10)||0); }
 function newerVer(a,b){ const x=verNums(a), y=verNums(b); for(let i=0;i<Math.max(x.length,y.length);i++){ if((x[i]||0)!==(y[i]||0)) return (x[i]||0)>(y[i]||0); } return false; }
 function loadHist(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); }catch(e){ return []; } }
+function pendingCode(){ try{ return JSON.parse(localStorage.getItem(PEND_KEY)||"null"); }catch(e){ return null; } }
+function clearPending(){ try{ localStorage.removeItem(PEND_KEY); }catch(e){} }
 function storedCode(){ try{ return JSON.parse(localStorage.getItem(CODE_KEY)||"null"); }catch(e){ return null; } }
 function setAppStatus(t,cls){ const e=document.getElementById("appStatus"); e.textContent=t; e.className="upstatus"+(cls?" "+cls:""); }
 function appLine(){ return APPUP.msg ? APPUP.msg+(APPUP.last?" Last checked: "+new Date(APPUP.last).toLocaleString("en-US",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+".":"") : ""; }
 function syncAppUI(){
+  let pd=pendingCode(); if(pd && !newerVer(pd.version,APP_VERSION)){ clearPending(); pd=null; }   // already installed (or older)
+  document.querySelector("#appCheck span").textContent = pd ? "Install Update" : "Check for updates now";
   document.getElementById("appVer").textContent = APP_VERSION + (window.__codeLoaded ? " (updated)" : "");
   document.getElementById("appUrl").value = APPUP.url; document.getElementById("appAuto").checked = APPUP.auto;
   const sc=storedCode();
@@ -1091,7 +1096,6 @@ async function checkAppUpdate(manual){
   if(!url){ if(manual) setAppStatus("Enter the update address first.","err"); return; }
   if(!/^https:\/\//i.test(url)){ if(manual) setAppStatus("The address must start with https://","err"); return; }
   if(manual) setAppStatus("Checking…");
-  let installedVer=null;
   const show=(t,c)=>{ if(manual || document.getElementById("setApp").style.display==="block") setAppStatus(t,c); };
   try{
     const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),20000);
@@ -1101,30 +1105,61 @@ async function checkAppUpdate(manual){
     if(html.length>3*1024*1024) throw new Error("The file is too large (3 MB maximum).");
     const m=html.match(/<meta name="app-version" content="([^"]+)"/);
     if(!m || !/<\/html>\s*$/i.test(html) || html.indexOf("__codeLoaded")<0 || html.indexOf('id="settings"')<0) throw new Error("That address does not hold a valid version of this app.");
-    const ver=m[1], sc=storedCode();
-    if(!manual && APPUP.skip===ver){ APPUP.last=Date.now(); saveAppUp(); return; }   // a version the user rolled back from is not installed again automatically
+    const ver=m[1], sc=storedCode(), pd=pendingCode();
+    if(!manual && APPUP.skip===ver){ APPUP.last=Date.now(); saveAppUp(); return; }   // a version the user rolled back from is not offered again automatically
     APPUP.last=Date.now();
-    if(!newerVer(ver,APP_VERSION)){ APPUP.msg="You have the latest version ("+APP_VERSION+")."; }
-    else if(sc && !newerVer(ver,sc.version)){ APPUP.msg="Version "+sc.version+" is already downloaded. Restart the app to apply it."; }
+    let ask=null;
+    if(!newerVer(ver,APP_VERSION)){ APPUP.msg="You have the latest version ("+APP_VERSION+")."; clearPending(); }
+    else if(sc && !newerVer(ver,sc.version)){ APPUP.msg="Version "+sc.version+" is already installed. Restart the app to apply it."; }
+    else if(pd && !newerVer(ver,pd.version)){   // this version was downloaded before
+      APPUP.msg="Version "+pd.version+" is downloaded. Press Install Update to install it.";
+      if(manual || APPUP.declined!==pd.version) ask=pd.version;
+    }
     else{
       const entry={version:ver,html:html,fetched:Date.now()};
-      let hist=loadHist(); if(sc){ hist.push(sc); hist=hist.slice(-3); }   // keep the copy we are replacing so it can be restored
-      try{ localStorage.setItem(HIST_KEY,JSON.stringify(hist)); localStorage.setItem(CODE_KEY,JSON.stringify(entry)); }
-      catch(e){ try{ localStorage.removeItem(HIST_KEY); localStorage.setItem(CODE_KEY,JSON.stringify(entry)); }catch(e2){ throw new Error("The update could not be saved on this device."); } }
-      APPUP.skip=null; installedVer=ver;
-      APPUP.msg="Version "+ver+" downloaded. Restart the app to apply it.";
+      try{ localStorage.setItem(PEND_KEY,JSON.stringify(entry)); }
+      catch(e){ try{ localStorage.removeItem(HIST_KEY); localStorage.setItem(PEND_KEY,JSON.stringify(entry)); }catch(e2){ throw new Error("The update could not be saved on this device."); } }
+      APPUP.declined=null;
+      APPUP.msg="Version "+ver+" is downloaded. Press Install Update to install it.";
+      ask=ver;
     }
     saveAppUp(); syncAppUI(); show(appLine(),"ok");
-    if(installedVer && manual) restartApp("Installing version "+installedVer+"…");
+    if(ask) askInstall(ask);
   }catch(err){
     const msg = err.name==="AbortError" ? "The server took too long to answer." : (err instanceof TypeError ? "Could not reach the address. Check the internet connection and the address." : (err.message||"The update failed."));
     APPUP.msg="Last check failed: "+msg; saveAppUp(); show(APPUP.msg,"err");
   }
 }
 function maybeAutoAppCheck(minMs){ if(APPUP.auto && APPUP.url && Date.now()-APPUP.last > (minMs==null ? 20*3600*1000 : minMs)) checkAppUpdate(false); }
-document.getElementById("appUrl").addEventListener("change",e=>{ APPUP.url=e.target.value.trim(); APPUP.msg=""; APPUP.last=0; saveAppUp(); setAppStatus(""); });
+// The update is only installed after Yes (or Install Update) is pressed
+let updAskVer=null;
+function whenSplashGone(cb){ const e=document.getElementById("splash"); if(!e||!e.parentNode){ cb(); return; } setTimeout(()=>whenSplashGone(cb),250); }
+function askInstall(ver){
+  whenSplashGone(()=>{
+    if(!pendingCode() || document.getElementById("restarting").style.display==="flex") return;
+    updAskVer=ver;
+    document.getElementById("updAskMsg").textContent="Version "+ver+" found, update?";
+    document.getElementById("updAsk").style.display="flex";
+  });
+}
+function installPending(){
+  const pd=pendingCode(); if(!pd) return;
+  const sc=storedCode(); let hist=loadHist(); if(sc){ hist.push(sc); hist=hist.slice(-3); }   // keep the copy we are replacing so it can be restored
+  clearPending();
+  try{ localStorage.setItem(HIST_KEY,JSON.stringify(hist)); localStorage.setItem(CODE_KEY,JSON.stringify(pd)); }
+  catch(e){ try{ localStorage.removeItem(HIST_KEY); localStorage.setItem(CODE_KEY,JSON.stringify(pd)); }
+    catch(e2){ try{ localStorage.setItem(PEND_KEY,JSON.stringify(pd)); }catch(e3){} setAppStatus("The update could not be saved on this device.","err"); return; } }
+  APPUP.skip=null; APPUP.declined=null; APPUP.msg="Version "+pd.version+" installed."; saveAppUp();
+  restartApp("Installing version "+pd.version+"…");
+}
+document.getElementById("updYes").addEventListener("click",()=>{ document.getElementById("updAsk").style.display="none"; installPending(); });
+document.getElementById("updNo").addEventListener("click",()=>{
+  document.getElementById("updAsk").style.display="none";
+  APPUP.declined=updAskVer; APPUP.msg="Version "+updAskVer+" is downloaded but not installed. Press Install Update when you are ready."; saveAppUp(); syncAppUI(); setAppStatus(appLine());
+});
+document.getElementById("appUrl").addEventListener("change",e=>{ APPUP.url=e.target.value.trim(); APPUP.msg=""; APPUP.last=0; APPUP.declined=null; clearPending(); saveAppUp(); setAppStatus(""); syncAppUI(); });
 document.getElementById("appAuto").addEventListener("change",e=>{ APPUP.auto=e.target.checked; saveAppUp(); });
-document.getElementById("appCheck").addEventListener("click",()=>{ APPUP.url=document.getElementById("appUrl").value.trim(); saveAppUp(); checkAppUpdate(true); });
+document.getElementById("appCheck").addEventListener("click",()=>{ if(pendingCode()){ installPending(); return; } APPUP.url=document.getElementById("appUrl").value.trim(); saveAppUp(); checkAppUpdate(true); });
 document.getElementById("appRestart").addEventListener("click",()=>{ restartApp("Installing the update…"); });
 document.getElementById("appRestore").addEventListener("click",()=>{ restorePrevious(); });
 
