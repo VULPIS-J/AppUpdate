@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.1.5">
+<meta name="app-version" content="1.1.6">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -276,6 +276,11 @@ tr.today .hj{color:var(--accent)}
       <div id="pBody">
         <label class="row"><span>Vibration</span><input type="checkbox" id="pVib"></label>
         <div class="row"><span>Alert sound</span><span class="sel"><select id="pSound"><option value="default">Default (phone)</option><option value="silent">Silent</option><option value="chime">Chime</option><option value="bell">Bell</option><option value="crystal">Crystal</option><option value="marimba">Marimba</option><option value="harp">Harp</option><option value="droplet">Droplet</option><option value="calm">Calm</option><option value="rise">Rise</option><option value="softping">Soft ping</option><option value="glow">Glow</option><option value="gentle">Gentle</option><option value="morning">Morning</option></select><button id="pPlay" type="button" aria-label="Play sound">&#9654;</button></span></div>
+        <button class="tab upl" id="pAdd" type="button"><span>Add your own sound…</span></button>
+        <input type="file" id="pFile" accept="audio/*" style="display:none">
+        <p class="upstatus" id="pMsg"></p>
+        <div id="pMine"></div>
+        <p class="note" style="margin:6px 4px 14px">Your own sounds play while the app is open. When the app is closed, the phone’s alert sound is used.</p>
         <div class="row"><span>Reminder before</span><select id="pBefore"><option value="">Same as general</option><option value="0">Off</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></select></div>
       </div>
     </div>
@@ -296,7 +301,7 @@ tr.today .hj{color:var(--accent)}
       <div class="row"><span>Version</span><span class="muted" id="appVer"></span></div>
       <p class="sethead">Update address</p>
       <div class="row"><input type="url" id="appUrl" placeholder="https://…/index.html" autocapitalize="off" autocomplete="off" spellcheck="false"></div>
-      <label class="row"><span>Check when the app opens</span><input type="checkbox" id="appAuto"></label>
+      <label class="row"><span>Check Automatically</span><input type="checkbox" id="appAuto"></label>
       <button class="tab upl" id="appCheck" type="button" style="margin-top:12px"><span>Check for updates now</span></button>
       <button class="tab upl" id="appRestart" type="button" style="display:none"><span>Restart to apply update</span></button>
       <p class="upstatus" id="appStatus"></p>
@@ -652,6 +657,7 @@ function renderTone(T){
 }
 let audioCtx=null; const toneCache={};
 function playTone(id){
+  if(isCustom(id)){ playCustom(id); return; }
   const T=TONES.find(x=>x.id===id); if(!T) return;
   try{
     const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
@@ -660,24 +666,45 @@ function playTone(id){
     const src=audioCtx.createBufferSource(); src.buffer=toneCache[id]; src.connect(audioCtx.destination); src.start();
   }catch(e){}
 }
+// Your own alert sounds: the audio files are kept on this device (IndexedDB), their names in the notification settings
+function sndDb(){ return new Promise((res,rej)=>{ const r=indexedDB.open("prayer-sounds",1); r.onupgradeneeded=()=>r.result.createObjectStore("s"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function sndPut(id,v){ const d=await sndDb(); return new Promise((res,rej)=>{ const t=d.transaction("s","readwrite"); t.objectStore("s").put(v,id); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+async function sndGet(id){ const d=await sndDb(); return new Promise((res,rej)=>{ const q=d.transaction("s","readonly").objectStore("s").get(id); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); }); }
+async function sndDel(id){ const d=await sndDb(); return new Promise((res,rej)=>{ const t=d.transaction("s","readwrite"); t.objectStore("s").delete(id); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+function isCustom(id){ return typeof NOTIF!=="undefined" && NOTIF.custom.some(c=>c.id===id); }
+function soundName(id){ const c=NOTIF.custom.find(x=>x.id===id); return c?c.name:toneName(id); }
+function decodeAudio(ab){ return new Promise((res,rej)=>{ const p=audioCtx.decodeAudioData(ab,res,rej); if(p&&p.catch) p.catch(rej); }); }
+async function loadCustom(id){
+  if(toneCache[id]) return toneCache[id];
+  const rec=await sndGet(id); if(!rec) return null;
+  unlockAudio(); if(!audioCtx) return null;
+  const buf=await decodeAudio(rec.data.slice(0)); toneCache[id]=buf; return buf;
+}
+function playCustom(id){
+  unlockAudio();
+  loadCustom(id).then(b=>{ if(!b||!audioCtx) return; const src=audioCtx.createBufferSource(); src.buffer=b; src.connect(audioCtx.destination); src.start(); try{ src.stop(audioCtx.currentTime+30); }catch(e){} }).catch(()=>{});
+}
 // Browsers/WebViews only allow sound after a tap, so the audio is unlocked on the first touch
+let customPreloaded=false;
 function unlockAudio(){
   try{ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return; audioCtx=audioCtx||new AC(); if(audioCtx.state==="suspended") audioCtx.resume(); }catch(e){}
+  if(!customPreloaded && typeof NOTIF!=="undefined" && audioCtx){ customPreloaded=true; NOTIF.custom.forEach(c=>loadCustom(c.id).catch(()=>{})); }
 }
 ["pointerdown","touchstart","click","keydown"].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
 const NOTIF_KEY = "notif-v1";
-let NOTIF = {master:true, prayers:[], before:0, endWarn:true};
+let NOTIF = {master:true, prayers:[], before:0, endWarn:true, custom:[]};
 try{ const n=JSON.parse(localStorage.getItem(NOTIF_KEY)); if(n && typeof n==="object") NOTIF=Object.assign(NOTIF,n); }catch(e){}
-// per prayer: on/off, vibration, sound ("default" | "silent"), reminder minutes (null = same as general)
+NOTIF.custom = (Array.isArray(NOTIF.custom)?NOTIF.custom:[]).filter(c=>c && typeof c.id==="string" && typeof c.name==="string");
+// per prayer: on/off, vibration, sound ("default" | "silent", reminder minutes (null = same as general)
 NOTIF.prayers = Array.from({length:6},(_,i)=>{
   const p = NOTIF.prayers && NOTIF.prayers[i];
   const q = Object.assign({on:false, vib:true, sound:"default", before:null}, typeof p==="boolean" ? {on:p} : (p||{}));
-  if(q.sound!=="default" && q.sound!=="silent" && !TONES.some(t=>t.id===q.sound)) q.sound="default";
+  if(q.sound!=="default" && q.sound!=="silent" && !TONES.some(t=>t.id===q.sound) && !NOTIF.custom.some(c=>c.id===q.sound)) q.sound="default";
   return q;
 });
 function prayerBefore(P){ return P.before===null || P.before===undefined ? NOTIF.before : P.before; }
-function chanId(P){ return "prayer-"+(P.vib?"v":"n")+"-"+(P.sound==="default"?"d":P.sound==="silent"?"s":"t-"+P.sound); }
-function prayerSummary(P){ return !P.on ? "Off" : "On"+(P.vib?" · Vibration":"")+(P.sound==="silent"?" · Silent":P.sound!=="default"?" · "+toneName(P.sound):""); }
+function chanId(P){ const sd=isCustom(P.sound)?"default":P.sound; return "prayer-"+(P.vib?"v":"n")+"-"+(sd==="default"?"d":sd==="silent"?"s":"t-"+sd); }   // your own sounds use the phone's sound when the app is closed
+function prayerSummary(P){ return !P.on ? "Off" : "On"+(P.vib?" · Vibration":"")+(P.sound==="silent"?" · Silent":P.sound!=="default"?" · "+soundName(P.sound):""); }
 function saveNotif(){ try{ localStorage.setItem(NOTIF_KEY,JSON.stringify(NOTIF)); }catch(e){} }
 let CITY = "Ankara";
 try{ if(localStorage.getItem("city")==="Nieuwegein") CITY="Nieuwegein"; }catch(e){}
@@ -781,8 +808,22 @@ async function scheduleAll(){
 
 // Fallback (browser / converters without the Capacitor plugin): works while the app is open
 const fired = new Set();
+function customInApp(){
+  if(!NOTIF.master) return;
+  const now=new Date(), t=DATA[iso(now)]; if(!t) return;
+  dayTimes(now,t).forEach((when,i)=>{
+    const P=NOTIF.prayers[i]; if(!P.on || !isCustom(P.sound)) return;
+    const bf=prayerBefore(P);
+    [[0,when],[bf,new Date(when-bf*60000)]].forEach(([m,at_],k)=>{
+      if(k===1 && !m) return;
+      const key="c"+iso(now)+"-"+i+"-"+k, diff=now-at_;
+      if(diff>=0 && diff<60000 && !fired.has(key)){ fired.add(key); playTone(P.sound); }
+    });
+  });
+}
 function checkAlerts(){
-  if(LN() || !NOTIF.master || !("Notification" in window) || Notification.permission!=="granted") return;
+  if(LN()){ customInApp(); return; }
+  if(!NOTIF.master || !("Notification" in window) || Notification.permission!=="granted") return;
   const now=new Date(), t=DATA[iso(now)]; if(!t) return;
   dayTimes(now,t).forEach((when,i)=>{
     const P=NOTIF.prayers[i]; if(!P.on) return;
@@ -793,7 +834,7 @@ function checkAlerts(){
       if(diff>=0 && diff<60000 && !fired.has(key)){
         fired.add(key);
         const isTone = P.sound!=="default" && P.sound!=="silent";
-        const toneOk = !!(isTone && audioCtx && audioCtx.state==="running");   // if the tone can't play, the phone's own sound is used so the alert is never silent
+        const toneOk = !!(isTone && audioCtx && audioCtx.state==="running" && (!isCustom(P.sound) || toneCache[P.sound]));   // if the tone can't play, the phone's own sound is used so the alert is never silent
         try{ new Notification(NAMES[i]+(m?" in "+m+" min":""),{body:t[i]+" · "+CITY, silent:P.sound==="silent" || toneOk, vibrate:P.vib?[200,100,200]:[]}); }catch(e){}
         if(toneOk) playTone(P.sound);
       }
@@ -826,7 +867,26 @@ document.querySelectorAll(".nPrayer").forEach(c=>c.addEventListener("change",()=
 
 // Per-prayer settings page (opened by pressing the prayer's name)
 let curPrayer=0;
+function setSndMsg(t,cls){ const e=document.getElementById("pMsg"); e.textContent=t||""; e.className="upstatus"+(cls?" "+cls:""); }
+function rebuildSounds(){
+  const sel=document.getElementById("pSound"), old=sel.querySelector("optgroup"); if(old) old.remove();
+  if(NOTIF.custom.length){
+    const g=document.createElement("optgroup"); g.label="My sounds";
+    NOTIF.custom.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.name; g.appendChild(o); });
+    sel.appendChild(g);
+  }
+  const box=document.getElementById("pMine"); box.innerHTML="";
+  NOTIF.custom.forEach(c=>{
+    const row=document.createElement("div"); row.className="row";
+    const nm=document.createElement("span"); nm.textContent=c.name;
+    const act=document.createElement("span");
+    const pl=document.createElement("button"); pl.type="button"; pl.textContent="Play"; pl.dataset.play=c.id;
+    const rm=document.createElement("button"); rm.type="button"; rm.textContent="Remove"; rm.dataset.rm=c.id; rm.style.marginLeft="8px";
+    act.appendChild(pl); act.appendChild(rm); row.appendChild(nm); row.appendChild(act); box.appendChild(row);
+  });
+}
 function syncPrayerUI(){
+  rebuildSounds();
   const P=NOTIF.prayers[curPrayer];
   document.getElementById("pOn").checked=P.on;
   document.getElementById("pBody").className=P.on?"":"off";
@@ -840,6 +900,32 @@ document.querySelectorAll(".pbody").forEach(b=>b.addEventListener("click",()=>{ 
 document.getElementById("pOn").addEventListener("change",e=>{ NOTIF.prayers[curPrayer].on=e.target.checked; prayerChanged(); });
 document.getElementById("pVib").addEventListener("change",e=>{ NOTIF.prayers[curPrayer].vib=e.target.checked; prayerChanged(); });
 document.getElementById("pSound").addEventListener("change",e=>{ NOTIF.prayers[curPrayer].sound=e.target.value; prayerChanged(); playTone(e.target.value); });
+document.getElementById("pAdd").addEventListener("click",()=>{ unlockAudio(); document.getElementById("pFile").click(); });
+document.getElementById("pFile").addEventListener("change",async e=>{
+  const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  if(NOTIF.custom.length>=12){ setSndMsg("You can keep up to 12 sounds. Remove one first.","err"); return; }
+  if(f.size>4*1024*1024){ setSndMsg("That file is too large (4 MB maximum).","err"); return; }
+  setSndMsg("Adding…");
+  try{
+    unlockAudio(); if(!audioCtx) throw new Error("audio");
+    const data=await f.arrayBuffer();
+    await decodeAudio(data.slice(0));   // makes sure the phone can play this file
+    const id="u"+Date.now();
+    await sndPut(id,{data:data,type:f.type||""});
+    NOTIF.custom.push({id:id,name:(f.name.replace(/\.[^.]+$/,"")||"My sound").slice(0,40)});
+    NOTIF.prayers[curPrayer].sound=id; prayerChanged(); playTone(id);
+    setSndMsg("Added. It is now this prayer’s alert sound.","ok");
+  }catch(err){ setSndMsg("That file could not be added. Try an MP3, WAV, M4A or OGG file.","err"); }
+});
+document.getElementById("pMine").addEventListener("click",async e=>{
+  const pl=e.target.closest("[data-play]"); if(pl){ playTone(pl.dataset.play); return; }
+  const rm=e.target.closest("[data-rm]"); if(!rm) return;
+  const id=rm.dataset.rm;
+  NOTIF.custom=NOTIF.custom.filter(c=>c.id!==id); delete toneCache[id];
+  NOTIF.prayers.forEach(P=>{ if(P.sound===id) P.sound="default"; });
+  try{ await sndDel(id); }catch(err){}
+  prayerChanged(); setSndMsg("Removed.");
+});
 document.getElementById("pPlay").addEventListener("click",()=>playTone(NOTIF.prayers[curPrayer].sound));
 document.getElementById("pBefore").addEventListener("change",e=>{ NOTIF.prayers[curPrayer].before=e.target.value===""?null:Number(e.target.value); prayerChanged(); });
 document.getElementById("nBefore").addEventListener("change",e=>{ NOTIF.before=Number(e.target.value); notifChanged(); });
@@ -2045,7 +2131,7 @@ setInterval(()=>{ const k=iso(new Date()); if(k!==lastDay){ lastDay=k; render();
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ render(); maybeAutoAppCheck(10*60*1000); } });
 
 render(); setupNotification();
-// Every time the app opens (while the splash screen is showing) it checks for a new version, unless "Check when the app opens" is switched off in Settings > App Update
+// Every time the app opens (while the splash screen is showing) it checks for a new version, unless "Check Automatically" is switched off in Settings > App Update
 maybeAutoAppCheck(0);
 window.__appOk=true; try{ localStorage.removeItem("app-boot-pending"); }catch(e){}   // the app started correctly
 })();
