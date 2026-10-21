@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ankara Prayer Times</title>
-<meta name="app-version" content="1.1.2">
+<meta name="app-version" content="1.1.3">
 <script>
 // Loader: if a newer copy of this app was downloaded (Settings > App Update), run that copy instead of the built-in one.
 (function(){
@@ -526,14 +526,17 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 #rd.imgmode #stage{padding:0}
 #rd.imgmode #view{max-width:none;overflow:hidden;padding:0}
 #rd.imgmode .txt{display:none}
+#ren input{width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit;margin-bottom:12px}
+#ttl{cursor:pointer}
+.rn{position:absolute;top:6px;left:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:14px;line-height:26px;text-align:center}
 #pgc{width:100%;height:100%;object-fit:contain;display:block}
-#ask{position:absolute;inset:0;background:rgba(8,14,24,.88);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
-#ask .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:440px;max-height:100%;overflow:auto}
-#ask h2{margin:0 0 14px;font:normal 1.2rem Georgia,serif;color:var(--acc)}
+#ask,#ren{position:absolute;inset:0;background:rgba(8,14,24,.88);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px}
+#ask .box,#ren .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;width:100%;max-width:440px;max-height:100%;overflow:auto}
+#ask h2,#ren h2{margin:0 0 14px;font:normal 1.2rem Georgia,serif;color:var(--acc)}
 #ask .q{margin:0 0 16px}
 #ask .q p{margin:0 0 8px}
 #ask .seg{justify-content:flex-start}
-#ask .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+#ask .acts,#ren .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <div id="app">
@@ -550,7 +553,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
  <section id="rd" class="hide">
   <div class="top">
    <button class="ib" id="back" aria-label="Back to library"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
-   <div id="ttl"></div>
+   <div id="ttl" role="button" title="Tap to rename"></div>
    <button class="ib" id="bm" aria-label="Add bookmark"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button>
    <button class="ib" id="menu" aria-label="Contents, search and settings"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   </div>
@@ -576,12 +579,19 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
     <div class="fld txt"><span>Line spacing</span><input type="range" id="r-lh" min="1.3" max="2.1" step="0.05" style="flex:1;accent-color:var(--acc)"></div>
     <div class="fld txt"><span>Page width</span><input type="range" id="r-m" min="22" max="48" step="1" style="flex:1;accent-color:var(--acc)"></div>
     <div class="fld txt"><span>Layout</span><div class="seg" id="g-mode"><button data-v="page">Pages</button><button data-v="scroll">Scroll</button></div></div>
+    <div class="fld"><span>Name</span><div class="seg"><button id="rename" type="button">Rename…</button></div></div>
+    <div class="fld"><span>InkWell</span><div class="seg"><button id="shareBk" type="button">Share book</button></div></div>
     <div class="fld"><span>Book type</span><div class="seg"><button id="retype" type="button">Change…</button></div></div>
     <p class="empty">The theme and accent color follow the Appearance settings on the Home screen.</p>
    </div>
   </aside>
  </section>
  <div id="toast" role="status"></div>
+ <div id="ren" class="hide"><div class="box">
+  <h2>Rename book</h2>
+  <input id="renIn" aria-label="Book name" maxlength="200">
+  <div class="acts"><button class="btn ghost" id="renC" type="button">Cancel</button><button class="btn" id="renO" type="button">Save</button></div>
+ </div></div>
  <div id="ask" class="hide"><div class="box">
   <h2>About this book</h2>
   <div class="q"><p>1. Is the book reflowable text, or images?</p><div class="seg" id="a1"><button type="button" data-q="1" data-v="text">Reflowable text</button><button type="button" data-q="1" data-v="images">Images</button></div></div>
@@ -1256,6 +1266,9 @@ return {
     const h=String(text||"").split(/\n{2,}/).map(p=>"<p>"+esc(p).replace(/\n/g,"<br>")+"</p>").join("")||"<p><br></p>";
     const id=create(h); docs[id].t=(title||"").trim()||"Untitled"; save(); return id;
   },
+  addHtml(title,html){
+    const id=create(html||"<p><br></p>"); docs[id].t=(title||"").trim()||"Untitled"; save(); return id;
+  },
   open(id){ openDoc(id); }
 };
 })(); }catch(err){ Ink=null; }
@@ -1409,7 +1422,7 @@ function hue(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h}
 function shelf(){
  const el=$('#shelf');
  if(!lib.length){el.innerHTML='<p class="empty">Your shelf is empty. Choose Open a book to get started.</p>';return}
- el.innerHTML=[...lib].sort((a,b)=>b.last-a.last).map(b=>`<div class="bk"><button data-id="${b.id}" class="bk-o" style="display:block;width:100%;text-align:left"><div class="cv" style="background:hsl(${hue(b.title)} 38% 30%)"><span>${esc(b.title.slice(0,70))}</span><small>${esc(b.author||'')}</small></div><div class="t">${esc(b.title)}</div><div class="bar2"><i style="width:${Math.round((b.prog||0)*100)}%"></i></div></button><button class="x" data-del="${b.id}" aria-label="Remove ${esc(b.title)}">×</button></div>`).join('');
+ el.innerHTML=[...lib].sort((a,b)=>b.last-a.last).map(b=>`<div class="bk"><button data-id="${b.id}" class="bk-o" style="display:block;width:100%;text-align:left"><div class="cv" style="background:hsl(${hue(b.title)} 38% 30%)"><span>${esc(b.title.slice(0,70))}</span><small>${esc(b.author||'')}</small></div><div class="t">${esc(b.title)}</div><div class="bar2"><i style="width:${Math.round((b.prog||0)*100)}%"></i></div></button><button class="rn" data-ren="${b.id}" aria-label="Rename ${esc(b.title)}">✎</button><button class="x" data-del="${b.id}" aria-label="Remove ${esc(b.title)}">×</button></div>`).join('');
 }
 /* ---------- image books (comics, manga, scans) ---------- */
 function askType(def){
@@ -1533,10 +1546,10 @@ async function openMeta(id,keep){
 let meta=null;
 function start(m,bk,noPush){
  if(bk.kind==='images')return startImages(m,bk,noPush);
- ikFree();ik=null;rd.classList.remove('imgmode');$('#sl').dir='ltr';
+ ikFree();ik=null;rd.classList.remove('imgmode');$('#sl').dir='ltr';$('#shareBk').textContent='Share book';
  meta=m;book=bk;chs=bk.chapters;
  $('#lib').classList.add('hide');rd.classList.remove('hide','pn-open');rd.classList.add('nochrome');
- $('#ttl').textContent=bk.title;
+ bk.title=m.title||bk.title;$('#ttl').textContent=bk.title;
  if(!noPush)history.pushState({n:'bookread'},'');   // Back returns to the library
  buildToc();buildMarks();
  requestAnimationFrame(()=>{openCh(Math.min(m.pos.ch||0,chs.length-1),m.pos.f||0);setTimeout(()=>rd.classList.remove('nochrome'),50)});
@@ -1545,8 +1558,8 @@ function startImages(m,bk,noPush){
  ikFree();
  meta=m;book=bk;ik=bk;chs=[];cur=0;
  $('#lib').classList.add('hide');rd.classList.remove('hide','pn-open');rd.classList.add('nochrome','imgmode');
- $('#sl').dir=bk.rtl?'rtl':'ltr';
- $('#ttl').textContent=bk.title;
+ $('#sl').dir=bk.rtl?'rtl':'ltr';$('#shareBk').textContent='Share this page';
+ bk.title=m.title||bk.title;$('#ttl').textContent=bk.title;
  if(!noPush)history.pushState({n:'bookread'},'');
  buildToc();buildMarks();
  requestAnimationFrame(()=>{showPage(Math.min(m.pos.pg||0,bk.total-1));setTimeout(()=>rd.classList.remove('nochrome'),50)});
@@ -1667,6 +1680,8 @@ function runSearch(){
 $('#open').onclick=()=>$('#file').click();
 $('#file').onchange=e=>{if(e.target.files[0])addFile(e.target.files[0]);e.target.value=''};
 $('#shelf').onclick=async e=>{
+ const rn=e.target.closest('[data-ren]');
+ if(rn){rename(lib.find(b=>b.id===rn.dataset.ren));return}
  const d=e.target.closest('[data-del]');
  if(d){const id=d.dataset.del;lib=lib.filter(b=>b.id!==id);ls.set('folio.lib',lib);idb('del',id);idb('del','parsed:'+id);shelf();return}
  const o=e.target.closest('[data-id]');if(o)openMeta(o.dataset.id);
@@ -1692,6 +1707,40 @@ $('#g-mode').onclick=e=>{const b=e.target.closest('button');if(b){const f=frac()
 $('#sm').onclick=()=>{set.size=Math.max(13,set.size-1);applySet(true)};
 $('#lg').onclick=()=>{set.size=Math.min(34,set.size+1);applySet(true)};
 $('#r-lh').oninput=e=>{set.lh=+e.target.value;applySet(true)};
+function rename(m){
+ if(!m)return;
+ const box=$('#ren'),inp=$('#renIn');inp.value=m.title;
+ const done=v=>{box.classList.add('hide');$('#renO').onclick=$('#renC').onclick=inp.onkeydown=null;if(v==null)return;v=v.trim().slice(0,200);if(!v)return;m.title=v;if(book&&meta===m){book.title=v;$('#ttl').textContent=v}ls.set('folio.lib',lib);shelf();toast('Renamed')};
+ $('#renO').onclick=()=>done(inp.value);$('#renC').onclick=()=>done(null);
+ inp.onkeydown=e=>{if(e.key==='Enter')done(inp.value);else if(e.key==='Escape')done(null)};
+ box.classList.remove('hide');setTimeout(()=>{inp.focus();inp.select()},50);
+}
+function shareBook(){
+ if(!meta||!book)return;
+ let html;
+ if(ik){
+  const c=$('#pgc'),k=Math.min(1,1600/Math.max(c.width,c.height)),t=document.createElement('canvas');
+  t.width=Math.max(1,Math.round(c.width*k));t.height=Math.max(1,Math.round(c.height*k));
+  t.getContext('2d').drawImage(c,0,0,t.width,t.height);
+  html='<p><img src="'+t.toDataURL('image/jpeg',.8)+'"></p>';
+ }else{
+  const out=[];
+  chs.forEach(c=>{
+   const d=new DOMParser().parseFromString(c.html,'text/html');
+   d.querySelectorAll('img,svg,script,style').forEach(e=>e.remove());
+   let h=d.body.innerHTML.trim();if(!h)return;
+   if(!d.querySelector('h1,h2,h3'))h='<h2>'+esc(c.title)+'</h2>'+h;
+   out.push(h);
+  });
+  html=out.join('');
+  if(html.length>2000000){toast('This book is too large to send to InkWell.');return}
+ }
+ rd.classList.remove('pn-open');
+ if(!shareHtmlToInk(ik?meta.title+' – page '+(ipg+1):meta.title,html))toast('InkWell isn’t available.');
+}
+$('#rename').onclick=()=>rename(meta);
+$('#ttl').onclick=()=>rename(meta);
+$('#shareBk').onclick=shareBook;
 $('#retype').onclick=async()=>{
  if(!meta)return;
  const m=meta,old=m.type;
@@ -1740,6 +1789,19 @@ return {
   leave(){ if(book)showLib(); }
 };
 })(); }catch(err){ Book=null; }
+
+// Sends a book (or a page of one) to InkWell as a new document and opens it there
+function shareHtmlToInk(title,html){
+  if(!Ink) return false;
+  const id=Ink.addHtml(title,html);
+  if(Book) Book.leave();
+  history.replaceState({n:"ink"},"");   // Back from the document goes to the InkWell list, then to the reader library
+  document.getElementById("bookView").style.display="none";
+  document.getElementById("inkView").style.display="flex";
+  Ink.enter("list");
+  Ink.open(id);
+  return true;
+}
 
 // Sends a note to InkWell as a new document and opens it there
 function shareToInk(title,body){
